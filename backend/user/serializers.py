@@ -30,9 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
             'uid': {'read_only': True}
         }
 
-    def create(self, validated_data, uid):
-        validated_data['uid'] = uid
-        return super().create(validated_data)
 
     @classmethod
     def login(cls, username, loginPassword):
