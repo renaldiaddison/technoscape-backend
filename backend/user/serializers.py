@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from utils import utils
-from .models import User
+from .models import User, UserApproval
 import requests
+from django.utils import timezone
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'phoneNumber', 'birthDate', 'email', 'pin', 'role']
         extra_kwargs = {
             'loginPassword': {'write_only': True},
-            "pin": {'write_only': True},
+            'pin': {'write_only': True},
             'uid': {'read_only': True}
         }
 
@@ -117,3 +118,44 @@ class UserSerializer(serializers.ModelSerializer):
         response = requests.post(url, headers=headers, json=payload)
 
         return response
+
+    @classmethod
+    def create_transaction(cls, senderAccountNo, receiverAccountNo, amount, access_token):
+        url_suffix = "/bankAccount/transaction/create"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+        payload = {
+            "senderAccountNo": senderAccountNo,
+            "receiverAccountNo": receiverAccountNo,
+            "amount": amount
+        }
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+        response = requests.post(url, headers=headers, json=payload)
+
+        return response
+
+    @classmethod
+    def get_transaction(cls, accountNo, pageNumber, access_token, traxType=["TRANSFER_IN", "TRANSFER_OUT"], recordsPerPage=2):
+        url_suffix = "/bankAccount/transaction/info"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+        payload = {
+            "accountNo": accountNo,
+            "traxType": traxType,
+            "pageNumber": pageNumber,
+            "recordsPerPage": recordsPerPage,
+        }
+
+        print(payload)
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+        response = requests.post(url, headers=headers, json=payload)
+        print(response)
+        return response
+
+
+class UserApprovalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserApproval
+        fields = '__all__'

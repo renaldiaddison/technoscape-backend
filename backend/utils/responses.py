@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 
+
 class DataResponse(Response):
     def __init__(self, data=None, status=None, error_message=None):
         if status and 400 <= status < 600:
@@ -21,5 +22,6 @@ class DataResponse(Response):
 def success_response(data=None, status=200):
     return DataResponse(data=data, status=status)
 
+
 def error_response(error_message=None, status=400):
-    return DataResponse(data=[], status=status, error_message=error_message)
+    return DataResponse(data={}, status=status, error_message=error_message)
