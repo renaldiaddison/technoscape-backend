@@ -63,6 +63,19 @@ def get_first_error(error_dict: ErrorDict):
 def __capitalize_first_character(input_string: str):
     return input_string[0].capitalize() + input_string[1:]
 
+
 def get_directory(relative_path):
     current_dir = os.getcwd()
     return os.path.join(current_dir, relative_path)
+
+
+class CurrencyConverter:
+    exchange_rate_idr_to_usd = 0.000066
+
+    @classmethod
+    def idr_to_usd(cls, amount_in_idr):
+        return amount_in_idr * cls.exchange_rate_idr_to_usd
+    
+    @classmethod
+    def usd_to_idr(cls, amount_in_usd):
+        return amount_in_usd / cls.exchange_rate_idr_to_usd

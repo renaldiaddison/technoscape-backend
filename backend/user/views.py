@@ -188,7 +188,6 @@ class __ApproveUserAPIView(APIView):
             responses.error_response(
                 error_message=utils.get_first_error(user_approval_serializer.errors))
         user_approval_serializer.save()
-        user_approval_serializer.instance
         user.approve_user(user_approval_serializer.instance)
 
         return responses.success_response(data={})

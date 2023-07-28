@@ -21,8 +21,8 @@ class _ModelPredictAPIView(APIView):
             user_id=user_id)
         # 	Gender, Married, Dependent, Education, Self_Employed, ApplicantIncome, CoapplicantIncome, LoanAmount, Loan_Amount_Term, Credit_History, Property_Area
         prediction = model_instance.predict(
-            [0.0 , 0.0, 0.0, 1,0.0, 1811, 1666.0, 54.0, 360.0, 1.0, 2])
-            # [[user.gender, user_approval.married, user_approval.dependent, user_approval.education, user_approval.self_employed, user_approval.income, user_approval.coappliciant_income, loan_approval.loan_amount, loan_approval.loan_days_term, user_approval.credit_history, user_approval.property_area]])
+            # [0.0 , 0.0, 0.0, 1,0.0, 1811, 1666.0, 54.0, 360.0, 1.0, 2])
+            [[user.gender, user_approval.married, user_approval.dependent, user_approval.education, user_approval.self_employed, user_approval.income, user_approval.coappliciant_income, loan_approval.loan_amount, loan_approval.loan_days_term, user_approval.credit_history, user_approval.property_area]])
         print(prediction)
         if prediction[0] == 0:
             return responses.error_response(error_message="anda miskin")
