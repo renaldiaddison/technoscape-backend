@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from user.models import User
+from django.utils.timezone import now
 
 # Create your models here.
 class LoanApproval(models.Model):
@@ -12,6 +13,7 @@ class LoanApproval(models.Model):
     loan_days_term = models.IntegerField()
     receiverAccountNo = models.TextField()
     is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=now)
     
     class Meta:
         db_table = "loan_approvals"
