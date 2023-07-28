@@ -72,8 +72,8 @@ class _GetLoan(APIView):
         user_id = self.request.GET.get("user_id")
 
         try:
-            loan_approval = LoanApproval.objects.filter(user_id=user_id, is_approved=True).first()
-            loan = Loan.objects.filter(approval=loan_approval, is_payed=False).first()
+            loan_approval = LoanApproval.objects.filter(user_id=user_id, is_approved=True).last()
+            loan = Loan.objects.filter(approval=loan_approval, is_payed=False).last()
             serializer = LoanSerializer(loan)
             return success_response(serializer.data)
         except LoanApproval.DoesNotExist:
@@ -81,8 +81,21 @@ class _GetLoan(APIView):
         except Loan.DoesNotExist:
             return error_response("No unpaid loan found for the user.")
         
+class _PayLoan(APIView):
+    def post(self, request, *args, **kwargs):
+        loan_id = request.data.get('loan')
+        loan = get_object_or_404(Loan, pk=loan_id)
+        loan.is_payed =True
+        loan.save()
+
+        return success_response(data="Loan Payed !")
+
+        
+
+        
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
 create_loan_view = _CreateLoanView.as_view()
 get_loan_view = _GetLoan.as_view()
+pay_loan_view = _PayLoan.as_view()
 
