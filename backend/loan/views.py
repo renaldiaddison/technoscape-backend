@@ -59,16 +59,16 @@ class _ApproveLoanApproval(APIView):
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
 
         # Save the LoanApproval data to LoanApprovalHistory
-        loan_approval_history = LoanApprovalHistory.objects.create(
-            user=loan_approval.user,
-            loan_amount=loan_approval.loan_amount,
-            loan_days_term=loan_approval.loan_days_term,
-            receiverAccountNo=loan_approval.receiverAccountNo,
-            is_approved=True,
-            created_at=loan_approval.created_at,
-        )
+        # loan_approval_history = LoanApprovalHistory.objects.create(
+        #     user=loan_approval.user,
+        #     loan_amount=loan_approval.loan_amount,
+        #     loan_days_term=loan_approval.loan_days_term,
+        #     receiverAccountNo=loan_approval.receiverAccountNo,
+        #     is_approved=True,
+        #     created_at=loan_approval.created_at,
+        # )
 
-        loan_approval.delete()
+        # loan_approval.delete()
 
         serializer = LoanApprovalSerializer(loan_approval_history)
         serialized_data = serializer.data
@@ -89,16 +89,16 @@ class _UnapproveLoanApproval(APIView):
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
 
         # Save the LoanApproval data to LoanApprovalHistory
-        loan_approval_history = LoanApprovalHistory.objects.create(
-            user=loan_approval.user,
-            loan_amount=loan_approval.loan_amount,
-            loan_days_term=loan_approval.loan_days_term,
-            receiverAccountNo=loan_approval.receiverAccountNo,
-            is_approved=False,
-            created_at=loan_approval.created_at,
-        )
+        # loan_approval_history = LoanApprovalHistory.objects.create(
+        #     user=loan_approval.user,
+        #     loan_amount=loan_approval.loan_amount,
+        #     loan_days_term=loan_approval.loan_days_term,
+        #     receiverAccountNo=loan_approval.receiverAccountNo,
+        #     is_approved=False,
+        #     created_at=loan_approval.created_at,
+        # )
 
-        loan_approval.delete()
+        # loan_approval.delete()
 
         serializer = LoanApprovalSerializer(loan_approval_history)
         serialized_data = serializer.data
