@@ -7,8 +7,9 @@ from .models import Model
 
 class _ModelPredictAPIView(APIView):
     def post(request, *args, **kwargs):
-        # get request data
-        # data = request.data.get('asd')
+        data = request.data.get('user_id')
+
+        
 
         # load model
         model_instance = Model.get_instance()

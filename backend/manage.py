@@ -2,10 +2,12 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+from model_api.models import Model
 
 def main():
     """Run administrative tasks."""
+    if sys.argv[1] == "runserver":
+        Model.get_instance()
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'technoscape_backend.settings')
     try:
         from django.core.management import execute_from_command_line

@@ -62,3 +62,7 @@ def get_first_error(error_dict: ErrorDict):
 
 def __capitalize_first_character(input_string: str):
     return input_string[0].capitalize() + input_string[1:]
+
+def get_directory(relative_path):
+    current_dir = os.getcwd()
+    return os.path.join(current_dir, relative_path)

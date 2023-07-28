@@ -1,8 +1,7 @@
 import os
-import tensorflow as tf
 from utils import utils
-from joblib import load
 from technoscape_backend.settings import BASE_DIR
+import joblib
 
 class Model:
     _instance = None
@@ -15,5 +14,5 @@ class Model:
 
     @classmethod
     def _load_model(cls):
-        model_path = BASE_DIR / 'model_api' / 'logistic_regression_model.pkl'
-        return tf.keras.models.load_model(model_path)
+        model_path = utils.get_directory('logistic_regression_model.pkl')
+        return joblib.load(model_path)
