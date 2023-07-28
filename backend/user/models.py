@@ -1,4 +1,5 @@
 from django.db import models
 
+
 class User(models.Model):
-    pass
+    pin = models.CharField(max_length=6)
