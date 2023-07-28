@@ -21,7 +21,7 @@ class __CreateUserAPIView(APIView):
             return responses.error_response(error_message=json_register_response.get('errMsg'))
 
         User.objects.create(uid=json_register_response.get('data').get(
-            'uid'), pin=serializer.validated_data['pin'], old_password=serializer.validated_data['loginPassword'], current_password=serializer.validated_data['loginPassword'], username=serializer.validated_data['username'], email=serializer.validated_data['email'])
+            'uid'), pin=serializer.validated_data['pin'], old_password=serializer.validated_data['loginPassword'], current_password=serializer.validated_data['loginPassword'], username=serializer.validated_data['username'], email=serializer.validated_data['email'], gender=serializer.validated_data['gender'])
 
         create_new_account_response = UserSerializer.create_new_account(
             serializer.validated_data['username'], serializer.validated_data['loginPassword'])
@@ -63,6 +63,10 @@ class __LoginUserAPIView(APIView):
             return responses.error_response(error_message=json_get_user_profile_response.get('errMsg'))
 
         json_get_user_profile_response.get('data')['accessToken'] = accessToken
+        json_get_user_profile_response.get(
+            'data')['is_approved'] = user.is_approved
+        json_get_user_profile_response.get(
+            'data')['role'] = user.role
 
         return responses.success_response(data=json_get_user_profile_response.get('data'))
 
