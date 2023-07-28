@@ -53,7 +53,8 @@ INSTALLED_APPS = [
 
     # local apps
     'user',
-    'loan'
+    'loan',
+    'model_api'
 ]
 
 MIDDLEWARE = [
@@ -154,4 +155,4 @@ if DEBUG:
         "https://127.0.0.1:5173",
     ]
 
-CORS_URLS_REGEX = r"^/api/.*"
+CORS_URLS_REGEX = r"^/.*"
