@@ -73,7 +73,7 @@ class _CreateLoanView(APIView):
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/addBalance", json={
             "receiverAccountNo": loan_approval.receiverAccountNo,
             "amount": loan_approval.loan_amount
-        }, headers=headers, timeout=12)
+        }, headers=headers)
 
         if response.status_code // 100 == 2:
             response_data = response.json()
