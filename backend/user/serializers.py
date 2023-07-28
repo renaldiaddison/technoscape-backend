@@ -30,7 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
             'uid': {'read_only': True}
         }
 
-
     @classmethod
     def login(cls, username, loginPassword):
         url_suffix = "/user/auth/token"
@@ -70,5 +69,51 @@ class UserSerializer(serializers.ModelSerializer):
 
         response = requests.request(
             "POST", url, headers=headers, json=payload)
+
+        return response
+
+    @classmethod
+    def get_user_profile(cls, access_token):
+        url_suffix = "/user/info"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+        payload = {}
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+
+        return response
+
+    @classmethod
+    def get_user_bank_account(cls, access_token):
+        url_suffix = "/bankAccount/info/all"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+        payload = {}
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+
+        return response
+
+    @classmethod
+    def register(cls, ktpId, username, loginPassword, phoneNumber, birthDate, gender, email):
+        url_suffix = "/user/auth/create"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+        payload = {
+            "ktpId": ktpId,
+            "username": username,
+            "loginPassword": loginPassword,
+            "phoneNumber": phoneNumber,
+            "birthDate": birthDate,
+            "gender": gender,
+            "email": email
+        }
+        headers = {}
+        response = requests.post(url, headers=headers, json=payload)
 
         return response

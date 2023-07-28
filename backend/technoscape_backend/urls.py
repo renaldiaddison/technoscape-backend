@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('user/', include("user.urls")),
-    path('loan/', include('loan.urls'))
+    path('loan/', include('loan.urls')),
+    path('model/', include('model_api.urls'))
 ]
