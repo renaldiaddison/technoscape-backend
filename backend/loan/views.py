@@ -5,18 +5,32 @@ from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import generics
+from utils.permissions import *
+from user.serializers import UserSerializer
+
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
+        
+        access_token = request.META.get(
+            'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+
+        user_bank_account = UserSerializer.get_user_bank_account(
+            access_token).json()['data']['accounts'][0]['accountNo']
+        
+        print(user_bank_account)
+
         serializer = LoanApprovalSerializer(data=request.data)
+
         if not serializer.is_valid():
             return error_response(error_message=serializer.errors)
+        serializer.validated_data['receiverAccountNo'] = user_bank_account
         serializer.save()
         return success_response(data=serializer.data)
 
 
 class _ApproveLoanApproval(APIView):
-    # permission_classes = [isAdmin]
+    permission_classes = [IsAdmin]
 
     def put(self, request, *args, **kwargs):
         loan_approval_id = request.data.get('loan_approval_id')
@@ -54,6 +68,8 @@ class _CreateLoanView(APIView):
         # Define the response variable with a default value
         response = None
 
+        print(loan_approval.receiverAccountNo)
+
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/addBalance", json={
             "receiverAccountNo": loan_approval.receiverAccountNo,
             "amount": loan_approval.loan_amount
@@ -70,15 +86,27 @@ class _GetLoan(APIView):
     def get(self, request):
         user_id = self.request.GET.get("user_id")
 
-        try:
-            loan_approval = LoanApproval.objects.filter(user_id=user_id, is_approved=True).last()
-            loan = Loan.objects.filter(approval=loan_approval, is_payed=False).last()
-            serializer = LoanSerializer(loan)
-            return success_response(serializer.data)
-        except LoanApproval.DoesNotExist:
+        loan_approval = LoanApproval.objects.filter(user_id=user_id).last()
+        loan = Loan.objects.filter(approval=loan_approval).last()
+        print(loan_approval)
+        print(loan)
+        loan_approval_serializer = LoanApprovalSerializer(loan_approval)
+        loan_serializer = LoanSerializer(loan)
+
+        response_data = {
+            "loan_approval": loan_approval_serializer.data,
+            "loan": None if loan is None else loan_serializer.data 
+        }
+
+        if(loan != None):
+            return success_response(data = response_data)
+        elif(loan == None and loan_approval):
+            return success_response(data = response_data)
+        elif(loan_approval == None):
             return error_response("Loan approval not found for the user.")
-        except Loan.DoesNotExist:
+        elif(loan == None):
             return error_response("No unpaid loan found for the user.")
+            
         
 class _PayLoan(APIView):
     def post(self, request, *args, **kwargs):
@@ -110,11 +138,13 @@ class _PayLoan(APIView):
 class _AdminViewApprovals(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-id') 
     serializer_class = LoanApprovalSerializer
-    # permission_classes
+    permission_classes = [IsAdmin] 
 
 class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id') 
     serializer_class = LoanSerializer
+    permission_classes = [IsAdmin] 
+
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()

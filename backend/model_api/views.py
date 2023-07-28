@@ -15,7 +15,7 @@ class _ModelPredictAPIView(APIView):
 
         # predict model
         prediction = model_instance.predict()
-        return Response({"refresh_token": prediction}, status=status.HTTP_200_OK)
+        return Response({"result": prediction}, status=status.HTTP_200_OK)
 
 
 model_predict_api_view = _ModelPredictAPIView.as_view()
