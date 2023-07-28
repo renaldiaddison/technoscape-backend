@@ -25,6 +25,11 @@ class _CreateLoanApproval(APIView):
 
         if not serializer.is_valid():
             return error_response(error_message=serializer.errors)
+        
+        if(serializer.validated_data['loan_days_term'] == 360):
+            serializer.validated_data['rate'] = 7
+        elif(serializer.validated_data['loan_days_term'] == 270):
+            serializer.validated_data['rate'] = 6
 
         # model predict
         user_id = request.data.get('user')
