@@ -68,6 +68,8 @@ class _CreateLoanView(APIView):
         # Define the response variable with a default value
         response = None
 
+        print(loan_approval.receiverAccountNo)
+
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/addBalance", json={
             "receiverAccountNo": loan_approval.receiverAccountNo,
             "amount": loan_approval.loan_amount
@@ -84,15 +86,27 @@ class _GetLoan(APIView):
     def get(self, request):
         user_id = self.request.GET.get("user_id")
 
-        try:
-            loan_approval = LoanApproval.objects.filter(user_id=user_id, is_approved=True).last()
-            loan = Loan.objects.filter(approval=loan_approval, is_payed=False).last()
-            serializer = LoanSerializer(loan)
-            return success_response(serializer.data)
-        except LoanApproval.DoesNotExist:
+        loan_approval = LoanApproval.objects.filter(user_id=user_id).last()
+        loan = Loan.objects.filter(approval=loan_approval).last()
+        print(loan_approval)
+        print(loan)
+        loan_approval_serializer = LoanApprovalSerializer(loan_approval)
+        loan_serializer = LoanSerializer(loan)
+
+        response_data = {
+            "loan_approval": loan_approval_serializer.data,
+            "loan": None if loan is None else loan_serializer.data 
+        }
+
+        if(loan != None):
+            return success_response(data = response_data)
+        elif(loan == None and loan_approval):
+            return success_response(data = response_data)
+        elif(loan_approval == None):
             return error_response("Loan approval not found for the user.")
-        except Loan.DoesNotExist:
+        elif(loan == None):
             return error_response("No unpaid loan found for the user.")
+            
         
 class _PayLoan(APIView):
     def post(self, request, *args, **kwargs):
