@@ -22,12 +22,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['ktpId', 'username', 'loginPassword', 'gender',
+        fields = ['uid', 'ktpId', 'username', 'loginPassword', 'gender',
                   'phoneNumber', 'birthDate', 'email', 'pin', 'role']
         extra_kwargs = {
             'loginPassword': {'write_only': True},
             "pin": {'write_only': True},
+            'uid': {'read_only': True}
         }
+
+    def create(self, validated_data, uid):
+        validated_data['uid'] = uid
+        return super().create(validated_data)
 
     @classmethod
     def login(cls, username, loginPassword):
@@ -35,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
         url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
 
         payload = {
-            "username": username,   
+            "username": username,
             "loginPassword": loginPassword
         }
         headers = {}

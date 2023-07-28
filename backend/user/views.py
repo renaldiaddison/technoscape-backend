@@ -32,8 +32,10 @@ class __CreateUserAPIView(APIView):
         if not json_response.get('success'):
             return responses.error_response(error_message=json_response.get('errMsg'))
 
-        User.objects.create(uid=json_response.get('data').get(
-            'uid'), pin=serializer.validated_data['pin'])
+        serializer.create(serializer.validated_data, json_response.get('data').get(
+            'uid'))
+        # User.objects.create(uid=json_response.get('data').get(
+        #     'uid'), pin=serializer.validated_data['pin'])
 
         create_new_account_response = UserSerializer.create_new_account(
             serializer.validated_data['username'], serializer.validated_data['loginPassword'])
