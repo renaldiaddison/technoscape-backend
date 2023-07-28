@@ -5,10 +5,10 @@ from .models import Loan, LoanApproval
 class LoanApprovalSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanApproval
-        exclude = ['is_approved']
+        fields = '__all__'  
 
 
 class LoanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loan
-        exclude = ['is_payed']
+        fields = '__all__'  

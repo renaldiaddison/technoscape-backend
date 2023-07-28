@@ -1,11 +1,10 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from .serializers import LoanSerializer, LoanApprovalSerializer
 from utils.responses import error_response, success_response
 from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
 import requests
-
+from rest_framework import generics
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
@@ -90,12 +89,20 @@ class _PayLoan(APIView):
 
         return success_response(data="Loan Payed !")
 
-        
+class _AdminViewApprovals(generics.ListAPIView):
+    queryset = LoanApproval.objects.all().order_by('-id') 
+    serializer_class = LoanApprovalSerializer
+    # permission_classes
 
+class _AdminViewLoans(generics.ListAPIView):
+    queryset = Loan.objects.all().order_by('-id') 
+    serializer_class = LoanSerializer
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
 create_loan_view = _CreateLoanView.as_view()
 get_loan_view = _GetLoan.as_view()
 pay_loan_view = _PayLoan.as_view()
+admin_view_approvals = _AdminViewApprovals.as_view()
+admin_view_loans = _AdminViewLoans.as_view()
 
