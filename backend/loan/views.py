@@ -214,8 +214,29 @@ class _AdminViewApprovals(generics.ListAPIView):
     serializer_class = LoanApprovalSerializer
 
 class _AdminViewLoans(generics.ListAPIView):
-    queryset = Loan.objects.all().order_by('-id') 
+    queryset = Loan.objects.all().order_by('-id')
     serializer_class = LoanSerializer
+
+class _GetLoanHistory(generics.ListAPIView):
+    serializer_class = LoanSerializer
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            return LoanHistory.objects.filter(approval__user_id=user_id)
+        else:
+            return list()
+
+class _GetLoanApprovalHistory(generics.ListAPIView):
+    serializer_class = LoanApprovalSerializer
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            return LoanApprovalHistory.objects.filter(user_id=user_id)
+        else:
+            return list()
+
 
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
@@ -226,4 +247,6 @@ get_loan_view = _GetLoan.as_view()
 pay_loan_view = _PayLoan.as_view()
 admin_view_approvals = _AdminViewApprovals.as_view()
 admin_view_loans = _AdminViewLoans.as_view()
+get_loan_history = _GetLoanHistory.as_view()
+get_loan_approval_history = _GetLoanApprovalHistory.as_view()
 
