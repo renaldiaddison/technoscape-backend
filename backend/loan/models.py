@@ -3,7 +3,6 @@ import uuid
 from user.models import User
 from django.utils.timezone import now
 
-# Create your models here.
 class LoanApproval(models.Model):
     id = models.UUIDField(primary_key=True,
                           default=uuid.uuid4,
@@ -12,7 +11,8 @@ class LoanApproval(models.Model):
     loan_amount = models.IntegerField()
     loan_days_term = models.IntegerField()
     receiverAccountNo = models.TextField()
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(null=True)
+    rate = models.IntegerField(default=5)
     created_at = models.DateTimeField(default=now)
     
     class Meta:
@@ -29,7 +29,28 @@ class Loan(models.Model):
         db_table = "loans"
         
 
+class LoanApprovalHistory(models.Model):
+    id = models.UUIDField(primary_key=True,
+                          default=uuid.uuid4,
+                          editable=False)
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    loan_amount = models.IntegerField()
+    loan_days_term = models.IntegerField()
+    receiverAccountNo = models.TextField()
+    is_approved = models.BooleanField(null=True)
+    rate = models.IntegerField(default=5)
+    created_at = models.DateTimeField(default=now)
+    
+    class Meta:
+        db_table = "loan_approval_histories"
 
+class LoanHistory(models.Model):
+    id = models.UUIDField(primary_key=True,
+                          default=uuid.uuid4,
+                          editable=False)
+    approval = models.ForeignKey(LoanApproval, on_delete = models.CASCADE, null=True)
+    is_payed = models.BooleanField(default=False)
 
-
+    class Meta:
+        db_table = "loan_histories"
     
