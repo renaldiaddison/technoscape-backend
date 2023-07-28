@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import LoanSerializer, LoanApprovalSerializer
+from .serializers import LoanSerializer, LoanApprovalSerializer, LoanApprovalWithUserSerializer
 from utils.responses import error_response, success_response
 from .models import Loan, LoanApproval, LoanHistory, LoanApprovalHistory
 from django.shortcuts import get_object_or_404
@@ -210,8 +210,8 @@ class _PayLoan(APIView):
             return error_response(error_message=response.text)
 
 class _AdminViewApprovals(generics.ListAPIView):
-    queryset = LoanApproval.objects.all().order_by('-id') 
-    serializer_class = LoanApprovalSerializer
+    queryset = LoanApproval.objects.all().order_by('-id')
+    serializer_class = LoanApprovalWithUserSerializer
 
 class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id')
