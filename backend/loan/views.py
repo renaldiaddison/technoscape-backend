@@ -84,4 +84,5 @@ class _GetLoan(APIView):
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
 create_loan_view = _CreateLoanView.as_view()
+get_loan_view = _GetLoan.as_view()
 
