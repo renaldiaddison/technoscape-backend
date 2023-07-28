@@ -212,12 +212,10 @@ class _PayLoan(APIView):
 class _AdminViewApprovals(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-id') 
     serializer_class = LoanApprovalSerializer
-    permission_classes = [IsAdmin] 
 
 class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id') 
     serializer_class = LoanSerializer
-    permission_classes = [IsAdmin] 
 
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
