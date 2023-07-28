@@ -6,12 +6,25 @@ from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import generics
 from utils.permissions import *
+from user.serializers import UserSerializer
+
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
+        
+        access_token = request.META.get(
+            'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+
+        user_bank_account = UserSerializer.get_user_bank_account(
+            access_token).json()['data']['accounts'][0]['accountNo']
+        
+        print(user_bank_account)
+
         serializer = LoanApprovalSerializer(data=request.data)
+
         if not serializer.is_valid():
             return error_response(error_message=serializer.errors)
+        serializer.validated_data['receiverAccountNo'] = user_bank_account
         serializer.save()
         return success_response(data=serializer.data)
 
