@@ -24,8 +24,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['ktpId', 'username', 'loginPassword', 'gender',
                   'phoneNumber', 'birthDate', 'email', 'pin', 'role']
-        # fields = ['ktpId', 'username', 'loginPassword', 'phoneNumber',
-        #           'birthDate', 'gender', 'email', 'pin', 'role'],
         extra_kwargs = {
             'loginPassword': {'write_only': True},
             "pin": {'write_only': True},
@@ -37,7 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
         url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
 
         payload = {
-            "username": username,
+            "username": username,   
             "loginPassword": loginPassword
         }
         headers = {}
