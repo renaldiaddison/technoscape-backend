@@ -72,8 +72,8 @@ class _GetLoan(APIView):
         user_id = self.request.GET.get("user_id")
 
         try:
-            loan_approval = LoanApproval.objects.get(user_id=user_id, is_approved=True)
-            loan = Loan.objects.get(approval=loan_approval, is_payed=False)
+            loan_approval = LoanApproval.objects.filter(user_id=user_id, is_approved=True).first()
+            loan = Loan.objects.filter(approval=loan_approval, is_payed=False).first()
             serializer = LoanSerializer(loan)
             return success_response(serializer.data)
         except LoanApproval.DoesNotExist:
