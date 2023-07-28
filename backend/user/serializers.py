@@ -31,13 +31,14 @@ class UserSerializer(serializers.ModelSerializer):
             "pin": {'write_only': True},
         }
 
-    def login(self, obj):
+    @classmethod
+    def login(cls, username, loginPassword):
         url_suffix = "/user/auth/token"
         url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
 
         payload = {
-            "username": obj.username,
-            "loginPassword": obj.loginPassword
+            "username": username,
+            "loginPassword": loginPassword
         }
         headers = {}
 
@@ -45,28 +46,29 @@ class UserSerializer(serializers.ModelSerializer):
 
         return response
 
-    def create_new_account(self):
-        login_response = self.login()
+    @classmethod
+    def create_new_account(cls, username, loginPassword):
+        login_response = cls.login(username, loginPassword)
         json_login_response = login_response.json()
 
-        if json_login_response.get('success'):
-            url_suffix = "/bankAccount/create"
-            url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+        if not json_login_response.get('success'):
+            return login_response
 
-            payload = {
-                "balance": 0
-            }
+        url_suffix = "/bankAccount/create"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
 
-            authorization = 'Bearer' + \
-                json_login_response.get('data').get('accessToken')
+        payload = {
+            "balance": 0
+        }
 
-            headers = {
-                'Authorization': authorization
-            }
+        authorization = 'Bearer ' + \
+            json_login_response.get('data').get('accessToken')
 
-            response = requests.request(
-                "POST", url, headers=headers, data=payload)
+        headers = {
+            'Authorization': authorization
+        }
 
-            return response
+        response = requests.request(
+            "POST", url, headers=headers, json=payload)
 
-        return None
+        return response

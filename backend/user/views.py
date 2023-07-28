@@ -1,12 +1,10 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from utils import utils
+from utils import utils, responses
 from .models import User
 from .serializers import UserSerializer
 import requests
-import eventlet
-eventlet.monkey_patch()
 
 
 class __CreateUserAPIView(APIView):
@@ -14,9 +12,8 @@ class __CreateUserAPIView(APIView):
         serializer = UserSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response({"data": {},
-                             "errMsg": utils.get_first_error(serializer.errors)
-                             }, status=status.HTTP_200_OK)
+            responses.error_response(
+                error_message=utils.get_first_error(serializer.errors))
 
         url_suffix = "/user/auth/create"
         url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
@@ -33,15 +30,19 @@ class __CreateUserAPIView(APIView):
         response = requests.post(url, headers=headers, json=payload)
         json_response = response.json()
         if not json_response.get('success'):
-            return Response({"data": {},
-                             "success": False,
-                             "errMsg": json_response.get('errMsg')
-                             }, status=status.HTTP_200_OK)
+            return responses.error_response(error_message=json_response.get('errMsg'))
 
         User.objects.create(uid=json_response.get('data').get(
             'uid'), pin=serializer.validated_data['pin'])
-        serializer.create_new_account()
-        return Response({"data": {}, "success": True}, status=status.HTTP_200_OK)
+
+        create_new_account_response = UserSerializer.create_new_account(
+            serializer.validated_data['username'], serializer.validated_data['loginPassword'])
+        json_create_new_account_response = create_new_account_response.json()
+
+        if not json_create_new_account_response.get('success'):
+            return responses.error_response(error_message=json_create_new_account_response.get('errMsg'))
+
+        return responses.success_response(data=serializer.validated_data)
 
 
 create_user_api_view = __CreateUserAPIView.as_view()
