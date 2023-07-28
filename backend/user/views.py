@@ -42,7 +42,10 @@ class __CreateUserAPIView(APIView):
         if not json_create_new_account_response.get('success'):
             return responses.error_response(error_message=json_create_new_account_response.get('errMsg'))
 
-        return responses.success_response(data=serializer.validated_data)
+        return responses.success_response(data={
+            "user_data": serializer.validated_data,
+            "uid": json_response.get('data').get('uid')
+        })
 
 
 create_user_api_view = __CreateUserAPIView.as_view()
