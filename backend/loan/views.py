@@ -58,6 +58,9 @@ class _ApproveLoanApproval(APIView):
         loan_approval_id = request.data.get('loan_approval_id')
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
 
+        loan_approval.is_approved = True
+        loan_approval.save()
+
         # Save the LoanApproval data to LoanApprovalHistory
         # loan_approval_history = LoanApprovalHistory.objects.create(
         #     user=loan_approval.user,
@@ -70,7 +73,7 @@ class _ApproveLoanApproval(APIView):
 
         # loan_approval.delete()
 
-        serializer = LoanApprovalSerializer(loan_approval_history)
+        serializer = LoanApprovalSerializer(loan_approval)
         serialized_data = serializer.data
 
         response_data = {
