@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     # local apps
     'user',
+    'loan'
 ]
 
 MIDDLEWARE = [
