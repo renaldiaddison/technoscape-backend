@@ -1,0 +1,72 @@
+from rest_framework import serializers
+from django.core.validators import RegexValidator
+from utils import utils
+from .models import User
+import requests
+
+
+class UserSerializer(serializers.ModelSerializer):
+    ktpId = serializers.CharField(validators=[RegexValidator(
+        r'^\d+$', message='Only digits are allowed.')],)
+    username = serializers.CharField()
+    loginPassword = serializers.CharField()
+    phoneNumber = serializers.CharField(validators=[RegexValidator(
+        r'^\d+$', message='Only digits are allowed.')],)
+    birthDate = serializers.CharField(
+        max_length=8,
+        validators=[utils.validate_birthdate_format])
+    gender = serializers.CharField(max_length=1, validators=[RegexValidator(
+        r'^\d+$', message='Only digits are allowed.'),
+        utils.validate_gender],)
+    email = serializers.EmailField()
+
+    class Meta:
+        model = User
+        fields = ['ktpId', 'username', 'loginPassword', 'gender',
+                  'phoneNumber', 'birthDate', 'email', 'pin', 'role']
+        # fields = ['ktpId', 'username', 'loginPassword', 'phoneNumber',
+        #           'birthDate', 'gender', 'email', 'pin', 'role'],
+        extra_kwargs = {
+            'loginPassword': {'write_only': True},
+            "pin": {'write_only': True},
+        }
+
+    def login(self, obj):
+        url_suffix = "/user/auth/token"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+        payload = {
+            "username": obj.username,
+            "loginPassword": obj.loginPassword
+        }
+        headers = {}
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+
+        return response
+
+    def create_new_account(self):
+        login_response = self.login()
+        json_login_response = login_response.json()
+
+        if json_login_response.get('success'):
+            url_suffix = "/bankAccount/create"
+            url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+            payload = {
+                "balance": 0
+            }
+
+            authorization = 'Bearer' + \
+                json_login_response.get('data').get('accessToken')
+
+            headers = {
+                'Authorization': authorization
+            }
+
+            response = requests.request(
+                "POST", url, headers=headers, data=payload)
+
+            return response
+
+        return None
