@@ -10,6 +10,7 @@ class LoanApproval(models.Model):
     # user = models.ForeignKey(User, on_delete = models.CASCADE)
     loan_amount = models.IntegerField()
     loan_days_term = models.IntegerField()
+    receiverAccountNo = models.TextField()
     is_approved = models.BooleanField(default=False)
     
     class Meta:
