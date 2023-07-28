@@ -10,6 +10,8 @@ class UserApproval(models.Model):
     income = models.BigIntegerField()
     coappliciant_income = models.BigIntegerField()
     property_area = models.IntegerField()
+    credit_history = models.IntegerField()
+
 
     class Meta:
         db_table = "user_approvals"
@@ -20,6 +22,7 @@ class User(models.Model):
                               editable=False)
     username = models.TextField(unique=True)
     email = models.EmailField(unique=True)
+    gender = models.IntegerField(default=0)
     old_password = models.TextField()
     current_password = models.TextField()
     user_approval = models.ForeignKey(
