@@ -7,6 +7,7 @@ import requests
 from rest_framework import generics
 from utils.permissions import *
 from user.serializers import UserSerializer
+from utils import utils
 
 
 class _CreateLoanApproval(APIView):
@@ -53,7 +54,8 @@ class _CreateLoanView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoanSerializer(data=request.data)
         if not serializer.is_valid():
-            return error_response(error_message=serializer.errors)
+            print('asd')
+            return error_response(error_message=utils.get_first_error(serializer.errors))
 
         loan_approval_id = request.data.get('approval')
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)

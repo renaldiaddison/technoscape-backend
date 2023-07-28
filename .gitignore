@@ -73,4 +73,4 @@ dmypy.json
 .pyre/
 .vscode/
 .idea/
-migrations/
+# migrations/
