@@ -84,10 +84,28 @@ class _PayLoan(APIView):
     def post(self, request, *args, **kwargs):
         loan_id = request.data.get('loan')
         loan = get_object_or_404(Loan, pk=loan_id)
+        loan_approval = get_object_or_404(LoanApproval, pk=loan.approval)
         loan.is_payed =True
         loan.save()
 
-        return success_response(data="Loan Payed !")
+        response = None
+        
+        # Get Bearer Token
+        bearer_token = request.META.get(
+            'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+        headers = {'Authorization': f'Bearer {bearer_token}'}
+
+        response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
+            "senderAccountNo": loan_approval.receiverAccountNo,
+            "receiverAccountNo":"5859456169395245",
+            "amount": loan_approval.loan_amount
+        }, headers=headers, timeout=12)
+
+        if response.status_code // 100 == 2:
+            response_data = response.json()
+            return success_response(data="Loan Payed !")
+        else:
+            return error_response(error_message=response.text)
 
 class _AdminViewApprovals(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-id') 
