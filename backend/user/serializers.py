@@ -166,3 +166,9 @@ class UserApprovalSerializer(serializers.ModelSerializer):
         validated_data['coappliciant_income'] = utils.CurrencyConverter.idr_to_usd(
             validated_data['coappliciant_income'])
         return super().create(validated_data)
+
+
+class ImportantUserDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ['old_password', 'current_password', 'pin', 'is_approved']
