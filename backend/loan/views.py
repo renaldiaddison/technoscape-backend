@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from .serializers import LoanSerializer, LoanApprovalSerializer
 from utils.responses import error_response, success_response
-from .models import Loan, LoanApproval
+from .models import Loan, LoanApproval, LoanApprovalHistory, LoanHistory
 from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import generics
@@ -25,6 +25,13 @@ class _CreateLoanApproval(APIView):
 
         if not serializer.is_valid():
             return error_response(error_message=serializer.errors)
+        
+        # Rate total 5%, 6%, 7%
+        if(serializer.validated_data['loan_days_term'] == 360):
+            serializer.validated_data['rate'] = 7
+        elif(serializer.validated_data['loan_days_term'] == 270):
+            serializer.validated_data['rate'] = 6
+
         serializer.validated_data['receiverAccountNo'] = user_bank_account
         serializer.save()
         return success_response(data=serializer.data)
@@ -36,15 +43,55 @@ class _ApproveLoanApproval(APIView):
     def put(self, request, *args, **kwargs):
         loan_approval_id = request.data.get('loan_approval_id')
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
-        loan_approval.is_approved = True
-        loan_approval.save()
 
-        serializer = LoanApprovalSerializer(loan_approval)
+        # Save the LoanApproval data to LoanApprovalHistory
+        loan_approval_history = LoanApprovalHistory.objects.create(
+            user=loan_approval.user,
+            loan_amount=loan_approval.loan_amount,
+            loan_days_term=loan_approval.loan_days_term,
+            receiverAccountNo=loan_approval.receiverAccountNo,
+            is_approved=True,
+            created_at=loan_approval.created_at,
+        )
+
+        loan_approval.delete()
+
+        serializer = LoanApprovalSerializer(loan_approval_history)
         serialized_data = serializer.data
 
         response_data = {
             'loan_approval': serialized_data,
-            'message': 'Loan approval has been approved.',
+            'message': 'Loan approval has been approved and moved to history.',
+        }
+
+        return success_response(data=response_data)
+
+
+class _UnapproveLoanApproval(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, *args, **kwargs):
+        loan_approval_id = request.data.get('loan_approval_id')
+        loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
+
+        # Save the LoanApproval data to LoanApprovalHistory
+        loan_approval_history = LoanApprovalHistory.objects.create(
+            user=loan_approval.user,
+            loan_amount=loan_approval.loan_amount,
+            loan_days_term=loan_approval.loan_days_term,
+            receiverAccountNo=loan_approval.receiverAccountNo,
+            is_approved=False,
+            created_at=loan_approval.created_at,
+        )
+
+        loan_approval.delete()
+
+        serializer = LoanApprovalSerializer(loan_approval_history)
+        serialized_data = serializer.data
+
+        response_data = {
+            'loan_approval': serialized_data,
+            'message': 'Loan approval has been declined and moved to history.',
         }
 
         return success_response(data=response_data)
@@ -118,6 +165,17 @@ class _PayLoan(APIView):
         loan.is_payed =True
         loan.save()
 
+        # Save the Loan data to LoanHistory
+        loan_history = LoanHistory.objects.create(
+            id = loan.id,
+            is_payed = loan.is_payed,
+            approval = loan.approval
+        )
+
+        loan.delete()
+        
+        #
+
         response = None
         
         # Get Bearer Token
@@ -150,6 +208,7 @@ class _AdminViewLoans(generics.ListAPIView):
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
+unapprove_loan_approval_view = _UnapproveLoanApproval.as_view()
 create_loan_view = _CreateLoanView.as_view()
 get_loan_view = _GetLoan.as_view()
 pay_loan_view = _PayLoan.as_view()
