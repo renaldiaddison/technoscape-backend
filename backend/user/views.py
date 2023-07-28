@@ -193,6 +193,31 @@ class __ApproveUserAPIView(APIView):
         return responses.success_response(data={})
 
 
+class _ChangePasswordUserAPIView(APIView):
+    def put(self, request, *args, **kwargs):
+        user_id = request.data.get('user_id')
+        user = User.objects.filter(
+            uid=user_id).first()
+
+        if not user:
+            return responses.error_response(error_message="User not found")
+        
+        # new_password = request.data.get('new_password')
+        # serializer = UpdatePasswordUserSerializer(user,
+        #                                           data=request.data)
+
+        # if not serializer.is_valid():
+        #     return Response({"detail":
+        #                      utils.get_first_error(serializer.errors)
+        #                      }, status=status.HTTP_400_BAD_REQUEST)
+
+        # if (utils.compare_password(serializer.validated_data['password'], user.password)):
+        #     return Response({"detail": "New password must be different from the old password"}, status=status.HTTP_400_BAD_REQUEST)
+        # serializer.save()
+        # ForgotPasswordLink.delete_by_user_id_if_exists(user_id)
+        # return Response({"detail": "Password changed."}, status=status.HTTP_200_OK)
+
+
 create_user_api_view = __CreateUserAPIView.as_view()
 login_user_api_view = __LoginUserAPIView.as_view()
 get_user_api_view = __GetUserAPIView.as_view()

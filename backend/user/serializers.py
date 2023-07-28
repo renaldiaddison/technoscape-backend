@@ -163,6 +163,6 @@ class UserApprovalSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['income'] = utils.CurrencyConverter.idr_to_usd(
             validated_data['income'])
-        validated_data['coapplicant_income'] = utils.CurrencyConverter.idr_to_usd(
-            validated_data['coapplicant_income'])
+        validated_data['coappliciant_income'] = utils.CurrencyConverter.idr_to_usd(
+            validated_data['coappliciant_income'])
         return super().create(validated_data)
