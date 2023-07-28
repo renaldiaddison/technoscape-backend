@@ -5,6 +5,7 @@ from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import generics
+from utils.permissions import *
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
@@ -16,7 +17,7 @@ class _CreateLoanApproval(APIView):
 
 
 class _ApproveLoanApproval(APIView):
-    # permission_classes = [isAdmin]
+    permission_classes = [IsAdmin]
 
     def put(self, request, *args, **kwargs):
         loan_approval_id = request.data.get('loan_approval_id')
@@ -110,11 +111,13 @@ class _PayLoan(APIView):
 class _AdminViewApprovals(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-id') 
     serializer_class = LoanApprovalSerializer
-    # permission_classes
+    permission_classes = [IsAdmin] 
 
 class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id') 
     serializer_class = LoanSerializer
+    permission_classes = [IsAdmin] 
+
         
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
