@@ -17,9 +17,14 @@ class _CreateLoanApproval(APIView):
 
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+        
+        response = UserSerializer.get_user_bank_account(
+            access_token)
 
-        user_bank_account = UserSerializer.get_user_bank_account(
-            access_token).json()['data']['accounts'][0]['accountNo']
+        if response.status_code == 401:
+            return response.error_response(error_message="Unauthorized", status=401)
+
+        user_bank_account = response.json()['data']['accounts'][0]['accountNo']
 
         print(user_bank_account)
 

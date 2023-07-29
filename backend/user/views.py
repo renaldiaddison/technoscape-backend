@@ -56,8 +56,13 @@ class __LoginUserAPIView(APIView):
 
         accessToken = json_login_response.get('data').get('accessToken')
 
-        json_get_user_profile_response = UserSerializer.get_user_profile(
-            accessToken).json()
+        response = UserSerializer.get_user_profile(
+            accessToken)
+
+        if response.status_code == 401:
+            responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_user_profile_response = response.json()
 
         if not json_get_user_profile_response.get('success'):
             return responses.error_response(error_message=json_get_user_profile_response.get('errMsg'))
@@ -76,8 +81,13 @@ class __GetUserAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_get_user_profile_response = UserSerializer.get_user_profile(
-            access_token).json()
+        response = UserSerializer.get_user_profile(
+            access_token)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_user_profile_response = response.json()
 
         if not json_get_user_profile_response.get('success'):
             return responses.error_response(error_message=json_get_user_profile_response.get('errMsg'))
@@ -90,8 +100,13 @@ class __GetUserBankAccountAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_get_user_bank_account_response = UserSerializer.get_user_bank_account(
-            access_token=access_token).json()
+        response = UserSerializer.get_user_bank_account(
+            access_token=access_token)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_user_bank_account_response = response.json()
 
         if not json_get_user_bank_account_response.get('success'):
             return responses.error_response(error_message=json_get_user_bank_account_response.get('errMsg'))
@@ -110,8 +125,13 @@ class __CreateTransactionAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_create_transaction_response = UserSerializer.create_transaction(senderAccountNo, receiverAccountNo, amount,
-                                                                             access_token).json()
+        response = UserSerializer.create_transaction(senderAccountNo, receiverAccountNo, amount,
+                                                     access_token)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_create_transaction_response = response.json()
 
         if not json_create_transaction_response.get('success'):
             return responses.error_response(error_message=json_create_transaction_response.get('errMsg'))
@@ -127,14 +147,41 @@ class __GetUserTransactionAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_get_transaction_response = UserSerializer.get_transaction(
-            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token).json()
+        response = UserSerializer.get_transaction(
+            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_transaction_response = response.json()
 
         if not json_get_transaction_response.get('success'):
             return responses.error_response(error_message=json_get_transaction_response.get('errMsg'))
 
-        return responses.success_response(data=json_get_transaction_response.get(
-            'data'))
+        data = json_get_transaction_response.get(
+            'data')
+
+        transactions = data.get('transactions')
+
+        for transaction in transactions:
+            print(transaction)
+            sender_account_info_response = UserSerializer.get_bank_account_info(
+                access_token=access_token, accountNo=transaction.get('senderAccountNo'))
+
+            receiver_account_info_response = UserSerializer.get_bank_account_info(
+                access_token=access_token, accountNo=transaction.get('receiverAccountNo'))
+
+            if sender_account_info_response.status_code == 401 or receiver_account_info_response.status_code == 401:
+                return responses.error_response(error_message="Unauthorized", status=401)
+
+            transaction['senderAccountInfo'] = sender_account_info_response.json().get(
+                'data')
+            transaction['senderAccountInfo'] = sender_account_info_response.json().get(
+                'data')
+            
+            transaction['traxType'] = utils.translate_en_to_id(transaction['traxType'])
+
+        return responses.success_response(data=data)
 
 
 class __GetUserTransactionTransferInAPIView(APIView):
@@ -144,8 +191,13 @@ class __GetUserTransactionTransferInAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_get_transaction_response = UserSerializer.get_transaction(
-            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token, traxType=["TRANSFER_IN"]).json()
+        response = UserSerializer.get_transaction(
+            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token, traxType=["TRANSFER_IN"])
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_transaction_response = response.json()
 
         if not json_get_transaction_response.get('success'):
             return responses.error_response(error_message=json_get_transaction_response.get('errMsg'))
@@ -161,8 +213,13 @@ class __GetUserTransactionTransferOutAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
-        json_get_transaction_response = UserSerializer.get_transaction(
-            accountNo == accountNo, pageNumber=pageNumber, access_token=access_token, traxType=["TRANSFER_OUT"]).json()
+        response = UserSerializer.get_transaction(
+            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token, traxType=["TRANSFER_OUT"])
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
+        json_get_transaction_response = response.json()
 
         if not json_get_transaction_response.get('success'):
             return responses.error_response(error_message=json_get_transaction_response.get('errMsg'))

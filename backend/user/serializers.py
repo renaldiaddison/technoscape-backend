@@ -44,9 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         response = requests.request("POST", url, headers=headers, json=payload)
 
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
-
         return response
 
     @classmethod
@@ -74,9 +71,6 @@ class UserSerializer(serializers.ModelSerializer):
         response = requests.request(
             "POST", url, headers=headers, json=payload)
 
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
-
         return response
 
     @classmethod
@@ -90,9 +84,6 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
         response = requests.request("POST", url, headers=headers, json=payload)
-
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
 
         return response
 
@@ -108,8 +99,21 @@ class UserSerializer(serializers.ModelSerializer):
 
         response = requests.request("POST", url, headers=headers, json=payload)
 
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
+        return response
+
+    @classmethod
+    def get_bank_account_info(cls, access_token, accountNo):
+        url_suffix = "/bankAccount/info/"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+        payload = {
+            'accountNo': accountNo
+        }
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, json=payload)
 
         return response
 
@@ -129,9 +133,6 @@ class UserSerializer(serializers.ModelSerializer):
         headers = {}
         response = requests.post(url, headers=headers, json=payload)
 
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
-
         return response
 
     @classmethod
@@ -147,9 +148,6 @@ class UserSerializer(serializers.ModelSerializer):
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.post(url, headers=headers, json=payload)
-
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
 
         return response
 
@@ -169,9 +167,6 @@ class UserSerializer(serializers.ModelSerializer):
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.post(url, headers=headers, json=payload)
-
-        if response.status_code == 401:
-            return responses.error_response(error_message="Unauthorized", status=401)
 
         return response
 
