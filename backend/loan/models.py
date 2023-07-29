@@ -14,7 +14,7 @@ class LoanApproval(models.Model):
     is_approved = models.BooleanField(null=True)
     rate = models.IntegerField(default=5)
     created_at = models.DateTimeField(default=now)
-    is_done = models.BooleanField(null=False)
+    is_done = models.BooleanField(null=True, blank=True, default=None)
     
     class Meta:
         db_table = "loan_approvals"

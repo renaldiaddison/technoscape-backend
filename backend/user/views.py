@@ -148,16 +148,20 @@ class __GetUserTransactionAPIView(APIView):
 
         traxType = []
 
+        print(transactionType)
+
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
         if transactionType is None:
             traxType = ["TRANSFER_IN", "TRANSFER_OUT"]
+        else:
+            traxType.append(transactionType)
 
-        traxType.append(transactionType)
+        print(traxType)
 
         response = UserSerializer.get_transaction(
-            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token)
+            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token, traxType=traxType)
 
         if response.status_code == 401:
             return responses.error_response(error_message="Unauthorized", status=401)
@@ -173,7 +177,6 @@ class __GetUserTransactionAPIView(APIView):
         transactions = data.get('transactions')
 
         for transaction in transactions:
-            print(transaction)
             sender_account_info_response = UserSerializer.get_bank_account_info(
                 access_token=access_token, accountNo=transaction.get('senderAccountNo'))
 
@@ -216,7 +219,7 @@ class __GetUserTransactionTransferInAPIView(APIView):
             'data'))
 
 
-class __GetUserTransactionTransferOutAPIView(APIView):
+class __GetConnectedUserAccountAPIView(APIView):
     def post(self, request, *args, **kwargs):
         accountNo = request.data.get('accountNo')
         pageNumber = request.data.get('pageNumber')
@@ -234,15 +237,36 @@ class __GetUserTransactionTransferOutAPIView(APIView):
         if not json_get_transaction_response.get('success'):
             return responses.error_response(error_message=json_get_transaction_response.get('errMsg'))
 
-        return responses.success_response(data=json_get_transaction_response.get(
-            'data'))
+        data = json_get_transaction_response.get(
+            'data')
+
+        transactions = data.get('transactions')
+
+        all_connected_user_account = []
+
+        for transaction in transactions:
+            receiver_account_info_response = UserSerializer.get_bank_account_info(
+                access_token=access_token, accountNo=transaction.get('receiverAccountNo'))
+
+            if transaction.get('senderAccountNo') == accountNo:
+                continue
+
+            if receiver_account_info_response.status_code == 401:
+                return responses.error_response(error_message="Unauthorized", status=401)
+
+            all_connected_user_account.append({
+                'receiverAccountInfo': receiver_account_info_response.json().get(
+                    'data'),
+                'receiverAccountNo': transaction.get('receiverAccountNo')
+            })
+
+        return responses.success_response(data=all_connected_user_account)
 
 
 class __ApproveUserAPIView(APIView):
     def post(self, request, *args, **kwargs):
         user_approval_serializer = UserApprovalSerializer(data=request.data)
         user_id = request.data.get('user_id')
-        print(user_id)
 
         user = User.objects.filter(
             uid=user_id).first()
@@ -313,7 +337,7 @@ get_user_bank_account_api_view = __GetUserBankAccountAPIView.as_view()
 create_transaction_api_view = __CreateTransactionAPIView.as_view()
 get_user_transaction_api_view = __GetUserTransactionAPIView.as_view()
 get_user_transaction_transfer_in_api_view = __GetUserTransactionTransferInAPIView.as_view()
-get_user_transaction_transfer_out_api_view = __GetUserTransactionTransferOutAPIView.as_view()
+get_connected_user_account_api_view = __GetConnectedUserAccountAPIView.as_view()
 approve_user_api_view = __ApproveUserAPIView.as_view()
 forgot_password_api_view = _ForgotPasswordUserAPIView.as_view()
 verify_pin_api_view = __VerifyPINAPIView.as_view()

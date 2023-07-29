@@ -90,6 +90,7 @@ def translate_en_to_id(en):
     translator = Translator()
     translation = translator.translate(en, dest='id')
     return translation.text
+    return en
 
 # class CurrencyConverter:
 #     exchange_rate_idr_to_usd = 0.000066

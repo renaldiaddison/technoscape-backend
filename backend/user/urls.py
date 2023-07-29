@@ -14,7 +14,7 @@ urlpatterns = [
     path('transaction/info/', views.get_user_transaction_api_view),
     path('transaction/info/transfer-in',
          views.get_user_transaction_transfer_in_api_view),
-    path('transaction/info/transfer-out',
-         views.get_user_transaction_transfer_out_api_view),
+    path('connected-user-account/',
+         views.get_connected_user_account_api_view),
 
 ]

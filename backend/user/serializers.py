@@ -178,7 +178,6 @@ class UserSerializer(serializers.ModelSerializer):
             "recordsPerPage": recordsPerPage,
         }
 
-        print(payload)
         headers = {
             'Authorization': f'Bearer {access_token}'
         }

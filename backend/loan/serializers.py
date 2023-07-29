@@ -10,7 +10,7 @@ class LoanApprovalSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanApproval
         fields = '__all__'
-        read_only_fields = ['receiverAccountNo']
+        read_only_fields = ['receiverAccountNo', 'is_done']
 
 
 class LoanSerializer(serializers.ModelSerializer):

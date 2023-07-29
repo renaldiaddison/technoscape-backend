@@ -17,7 +17,7 @@ class _CreateLoanApproval(APIView):
 
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
-        
+
         response = UserSerializer.get_user_bank_account(
             access_token)
 
@@ -26,12 +26,10 @@ class _CreateLoanApproval(APIView):
 
         user_bank_account = response.json()['data']['accounts'][0]['accountNo']
 
-        print(user_bank_account)
-
         serializer = LoanApprovalSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return error_response(error_message=serializer.errors)
+            return error_response(error_message=utils.get_first_error(serializer.errors))
 
         # Rate total 5%, 6%, 7%
         if (serializer.validated_data['loan_days_term'] == 360):
@@ -118,8 +116,6 @@ class _CreateLoanView(APIView):
         # Define the response variable with a default value
         response = None
 
-        print(loan_approval.receiverAccountNo)
-
         serializer = LoanSerializer(data=request.data)
         if not serializer.is_valid():
             return error_response(error_message=utils.get_first_error(serializer.errors))
@@ -142,8 +138,6 @@ class _GetLoan(APIView):
 
         loan_approval = LoanApproval.objects.filter(user_id=user_id).last()
         loan = Loan.objects.filter(approval=loan_approval).last()
-        print(loan_approval)
-        print(loan)
         loan_approval_serializer = LoanApprovalSerializer(loan_approval)
         loan_serializer = LoanSerializer(loan)
 
@@ -181,13 +175,13 @@ class _PayLoan(APIView):
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
             "senderAccountNo": loan.approval.receiverAccountNo,
             "receiverAccountNo": "5859457287248296",
-            "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount  / 100)
+            "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount / 100)
         }, headers=headers)
 
         if response.status_code // 100 == 2:
             response_data = response.json()
 
-            if(response_data.success == False):
+            if (response_data.success == False):
                 return error_response(error_message=response.text)
             return success_response(data=response_data)
         else:
@@ -200,11 +194,10 @@ class _GetLoanHistory(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id')
         user = get_object_or_404(User, uid=user_id)
-        if(user.role == 'ADMIN'):
+        if (user.role == 'ADMIN'):
             return Loan.objects.filter(approval__is_done=True).order_by('-created_at')
         else:
-            return Loan.objects.filter(approval__is_done=True, approval__user = user_id).order_by('-created_at')
-
+            return Loan.objects.filter(approval__is_done=True, approval__user=user_id).order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
