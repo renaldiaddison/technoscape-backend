@@ -11,26 +11,27 @@ from utils import utils
 from model_api.models import Model
 from user.models import User, UserApproval
 
+
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
-        
+
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
         user_bank_account = UserSerializer.get_user_bank_account(
             access_token).json()['data']['accounts'][0]['accountNo']
-        
+
         print(user_bank_account)
 
         serializer = LoanApprovalSerializer(data=request.data)
 
         if not serializer.is_valid():
             return error_response(error_message=serializer.errors)
-        
+
         # Rate total 5%, 6%, 7%
-        if(serializer.validated_data['loan_days_term'] == 360):
+        if (serializer.validated_data['loan_days_term'] == 360):
             serializer.validated_data['rate'] = 7
-        elif(serializer.validated_data['loan_days_term'] == 270):
+        elif (serializer.validated_data['loan_days_term'] == 270):
             serializer.validated_data['rate'] = 6
 
         # model predict
@@ -116,15 +117,13 @@ class _UnapproveLoanApproval(APIView):
 
 class _CreateLoanView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = LoanSerializer(data=request.data)
-        if not serializer.is_valid():
-            print('asd')
-            return error_response(error_message=utils.get_first_error(serializer.errors))
-
         loan_approval_id = request.data.get('approval')
-        loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
+        loan = Loan.objects.filter(approval_id=loan_approval_id).first()
 
-        
+        if loan:
+            return error_response(error_message="Loan already claimed")
+
+        loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
 
         # Get Bearer Token
         bearer_token = request.META.get(
@@ -136,18 +135,22 @@ class _CreateLoanView(APIView):
 
         print(loan_approval.receiverAccountNo)
 
+        serializer = LoanSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(error_message=utils.get_first_error(serializer.errors))
+
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/addBalance", json={
             "receiverAccountNo": loan_approval.receiverAccountNo,
             "amount": loan_approval.loan_amount
         }, headers=headers)
-
-        if response.status_code // 100 == 2:
-            response_data = response.json()
+        response_data = response.json()
+        if response_data.get('success'):
             serializer.save()
             return success_response(data=response_data)
         else:
             return error_response(error_message=response.text)
-        
+
+
 class _GetLoan(APIView):
     def get(self, request):
         user_id = self.request.GET.get("user_id")
@@ -161,40 +164,40 @@ class _GetLoan(APIView):
 
         response_data = {
             "loan_approval": loan_approval_serializer.data,
-            "loan": None if loan is None else loan_serializer.data 
+            "loan": None if loan is None else loan_serializer.data
         }
 
-        if(loan != None):
-            return success_response(data = response_data)
-        elif(loan == None and loan_approval):
-            return success_response(data = response_data)
-        elif(loan_approval == None):
+        if (loan != None):
+            return success_response(data=response_data)
+        elif (loan == None and loan_approval):
+            return success_response(data=response_data)
+        elif (loan_approval == None):
             return error_response("Loan approval not found for the user.")
-        elif(loan == None):
+        elif (loan == None):
             return error_response("No unpaid loan found for the user.")
-            
-        
+
+
 class _PayLoan(APIView):
     def post(self, request, *args, **kwargs):
         loan_id = request.data.get('loan')
         loan = get_object_or_404(Loan, pk=loan_id)
         loan_approval = get_object_or_404(LoanApproval, pk=loan.approval)
-        loan.is_payed =True
+        loan.is_payed = True
         loan.save()
 
         # Save the Loan data to LoanHistory
         loan_history = LoanHistory.objects.create(
-            id = loan.id,
-            is_payed = loan.is_payed,
-            approval = loan.approval
+            id=loan.id,
+            is_payed=loan.is_payed,
+            approval=loan.approval
         )
 
         loan.delete()
-        
+
         #
 
         response = None
-        
+
         # Get Bearer Token
         bearer_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
@@ -202,7 +205,7 @@ class _PayLoan(APIView):
 
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
             "senderAccountNo": loan_approval.receiverAccountNo,
-            "receiverAccountNo":"5859456169395245",
+            "receiverAccountNo": "5859456169395245",
             "amount": loan_approval.loan_amount
         }, headers=headers)
 
@@ -212,13 +215,27 @@ class _PayLoan(APIView):
         else:
             return error_response(error_message=response.text)
 
+
 class _AdminViewApprovals(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-id')
     serializer_class = LoanApprovalWithUserSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return success_response(serializer.data)
+
+
 class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id')
     serializer_class = LoanSerializer
+
 
 class _GetLoanHistory(generics.ListAPIView):
     serializer_class = LoanSerializer
@@ -229,6 +246,7 @@ class _GetLoanHistory(generics.ListAPIView):
             return LoanHistory.objects.filter(approval__user_id=user_id)
         else:
             return list()
+
 
 class _GetLoanApprovalHistory(generics.ListAPIView):
     serializer_class = LoanApprovalSerializer
@@ -241,7 +259,6 @@ class _GetLoanApprovalHistory(generics.ListAPIView):
             return list()
 
 
-        
 create_loan_approval_view = _CreateLoanApproval.as_view()
 approve_loan_approval_view = _ApproveLoanApproval.as_view()
 unapprove_loan_approval_view = _UnapproveLoanApproval.as_view()
@@ -252,4 +269,3 @@ admin_view_approvals = _AdminViewApprovals.as_view()
 admin_view_loans = _AdminViewLoans.as_view()
 get_loan_history = _GetLoanHistory.as_view()
 get_loan_approval_history = _GetLoanApprovalHistory.as_view()
-

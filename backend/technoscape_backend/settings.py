@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     # local apps
     'user',
     'loan',
-    'model_api'
+    'model_api',
+    'forgot_password_link'
 ]
 
 MIDDLEWARE = [

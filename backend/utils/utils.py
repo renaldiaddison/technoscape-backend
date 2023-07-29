@@ -7,6 +7,7 @@ import pathlib
 import uuid
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from googletrans import Translator
 load_dotenv()
 
 
@@ -14,13 +15,14 @@ def get_env(key):
     return os.environ.get(key)
 
 
-def send_user_activation_email(to, activation_link_param):
-    activation_link = get_env('ACTIVATION_LINK_PATH') + activation_link_param
+def send_user_forgot_password_email(to, forgot_password_link_param):
+    forgot_password_link = get_env(
+        'FORGOT_PASSWORD_LINK_PATH') + forgot_password_link_param
 
-    email_html = get_template('activation_user_email.html')
-    data = {'activation_link_url': activation_link}
+    email_html = get_template('forgot_password_user_email.html')
+    data = {'forgot_password_link_url': forgot_password_link}
 
-    subject, from_email, to = 'Account Activation', get_env(
+    subject, from_email, to = 'Forgot Password', get_env(
         'EMAIL_HOST_USER'), to
     html_content = email_html.render(data)
     msg = EmailMultiAlternatives(
@@ -68,14 +70,21 @@ def get_directory(relative_path):
     current_dir = os.getcwd()
     return os.path.join(current_dir, relative_path)
 
+def get_expiration_duration():
+    return timezone.timedelta(hours=2)
 
-class CurrencyConverter:
-    exchange_rate_idr_to_usd = 0.000066
+def translate_en_to_id(en):
+    translator = Translator()
+    translation = translator.translate(en, dest='id')
+    return translation.text
 
-    @classmethod
-    def idr_to_usd(cls, amount_in_idr):
-        return amount_in_idr * cls.exchange_rate_idr_to_usd
+# class CurrencyConverter:
+#     exchange_rate_idr_to_usd = 0.000066
+
+#     @classmethod
+#     def idr_to_usd(cls, amount_in_idr):
+#         return amount_in_idr * cls.exchange_rate_idr_to_usd
     
-    @classmethod
-    def usd_to_idr(cls, amount_in_usd):
-        return amount_in_usd / cls.exchange_rate_idr_to_usd
+#     @classmethod
+#     def usd_to_idr(cls, amount_in_usd):
+#         return amount_in_usd / cls.exchange_rate_idr_to_usd
