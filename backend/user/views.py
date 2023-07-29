@@ -20,12 +20,12 @@ class __CreateUserAPIView(APIView):
         if not json_register_response.get('success'):
             return responses.error_response(error_message=json_register_response.get('errMsg'))
 
-        User.objects.create(uid=json_register_response.get('data').get(
-            'uid'), pin=serializer.validated_data['pin'], old_password=serializer.validated_data['loginPassword'], current_password=serializer.validated_data['loginPassword'], username=serializer.validated_data['username'], email=serializer.validated_data['email'], gender=serializer.validated_data['gender'])
-
         create_new_account_response = UserSerializer.create_new_account(
             serializer.validated_data['username'], serializer.validated_data['loginPassword'])
         json_create_new_account_response = create_new_account_response.json()
+
+        User.objects.create(account_no=json_create_new_account_response.get('data').get('accountNo'), uid=json_register_response.get('data').get(
+            'uid'), pin=serializer.validated_data['pin'], old_password=serializer.validated_data['loginPassword'], current_password=serializer.validated_data['loginPassword'], username=serializer.validated_data['username'], email=serializer.validated_data['email'], gender=serializer.validated_data['gender'])
 
         if not json_create_new_account_response.get('success'):
             return responses.error_response(error_message=json_create_new_account_response.get('errMsg'))
@@ -43,7 +43,7 @@ class __LoginUserAPIView(APIView):
         password = request.data.get('password')
 
         user = User.objects.filter(
-            username=username, current_password=password).first()
+            username__iexact=username, current_password=password).first()
 
         if not user:
             return responses.error_response(error_message="User not found")
@@ -177,25 +177,34 @@ class __GetUserTransactionAPIView(APIView):
 
         data = json_get_transaction_response.get(
             'data')
-        
+
         data['filter'] = filter
 
         transactions = data.get('transactions')
 
+        formatted_data = []
+
         for transaction in transactions:
-            sender_account_info_response = UserSerializer.get_bank_account_info(
-                access_token=access_token, accountNo=transaction.get('senderAccountNo'))
+            sender_account_user = User.objects.filter(
+                account_no=transaction.get('senderAccountNo')).first()
+            receiver_account_user = User.objects.filter(
+                account_no=transaction.get('receiverAccountNo')).first()
 
-            receiver_account_info_response = UserSerializer.get_bank_account_info(
-                access_token=access_token, accountNo=transaction.get('receiverAccountNo'))
+            if sender_account_user is None or receiver_account_user is None:
+                continue
 
-            if sender_account_info_response.status_code == 401 or receiver_account_info_response.status_code == 401:
-                return responses.error_response(error_message="Unauthorized", status=401)
+            sender_account_info = {
+                'accountName': sender_account_user.username,
+                'accountNo': transaction.get('senderAccountNo'),
+            }
 
-            transaction['senderAccountInfo'] = sender_account_info_response.json().get(
-                'data')
-            transaction['receiverAccountInfo'] = receiver_account_info_response.json().get(
-                'data')
+            receiver_account_info = {
+                'accountName': receiver_account_user.username,
+                'accountNo': transaction.get('receiverAccountNo'),
+            }
+
+            transaction['senderAccountInfo'] = sender_account_info
+            transaction['receiverAccountInfo'] = receiver_account_info
 
             transaction['traxType'] = utils.translate_en_to_id(
                 transaction['traxType'])
@@ -228,12 +237,11 @@ class __GetUserTransactionTransferInAPIView(APIView):
 class __GetConnectedUserAccountAPIView(APIView):
     def post(self, request, *args, **kwargs):
         accountNo = request.data.get('accountNo')
-        pageNumber = request.data.get('pageNumber')
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
         response = UserSerializer.get_transaction(
-            accountNo=accountNo, pageNumber=pageNumber, access_token=access_token, traxType=["TRANSFER_OUT"])
+            accountNo=accountNo, pageNumber=1, access_token=access_token, traxType=["TRANSFER_OUT"], recordsPerPage=10000000)
 
         if response.status_code == 401:
             return responses.error_response(error_message="Unauthorized", status=401)
@@ -251,20 +259,22 @@ class __GetConnectedUserAccountAPIView(APIView):
         all_connected_user_account = []
 
         for transaction in transactions:
-            receiver_account_info_response = UserSerializer.get_bank_account_info(
-                access_token=access_token, accountNo=transaction.get('receiverAccountNo'))
-
-            if transaction.get('senderAccountNo') == accountNo:
+            if transaction.get('receiverAccountNo') == accountNo:
                 continue
 
-            if receiver_account_info_response.status_code == 401:
-                return responses.error_response(error_message="Unauthorized", status=401)
+            user = User.objects.filter(
+                account_no=transaction.get('receiverAccountNo')).first()
 
-            all_connected_user_account.append({
-                'receiverAccountInfo': receiver_account_info_response.json().get(
-                    'data'),
-                'receiverAccountNo': transaction.get('receiverAccountNo')
-            })
+            if user is None:
+                continue
+
+            receiver_data = {
+                'value': transaction.get('receiverAccountNo'),
+                'label': transaction.get('receiverAccountNo') + " - " + user.username.upper(),
+            }
+
+            if receiver_data not in all_connected_user_account:
+                all_connected_user_account.append(receiver_data)
 
         return responses.success_response(data=all_connected_user_account)
 

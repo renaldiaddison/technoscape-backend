@@ -176,7 +176,7 @@ class _PayLoan(APIView):
 
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
             "senderAccountNo": loan.approval.receiverAccountNo,
-            "receiverAccountNo": "5859457287248296",
+            "receiverAccountNo": "5859455512376902",
             "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount / 100)
         }, headers=headers)
 

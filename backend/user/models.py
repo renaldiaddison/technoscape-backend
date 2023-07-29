@@ -12,7 +12,6 @@ class UserApproval(models.Model):
     property_area = models.IntegerField()
     credit_history = models.IntegerField()
 
-
     class Meta:
         db_table = "user_approvals"
 
@@ -31,6 +30,7 @@ class User(models.Model):
     pin = models.CharField(max_length=6, validators=[RegexValidator(
         r'^\d+$', message='Only digits are allowed.')],)
     role = models.TextField(default="USER")
+    account_no = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "users"

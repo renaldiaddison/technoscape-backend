@@ -28,7 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'loginPassword': {'write_only': True},
             'pin': {'write_only': True},
-            'uid': {'read_only': True}
+            'uid': {'read_only': True},
+            'account_no': {'read_only': True}
         }
 
     @classmethod
@@ -202,7 +203,8 @@ class UserApprovalSerializer(serializers.ModelSerializer):
 class ImportantUserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ['old_password', 'current_password', 'pin', 'is_approved']
+        exclude = ['old_password', 'current_password',
+                   'pin', 'is_approved', 'account_no']
 
 
 class UpdatePasswordUserSerializer(serializers.ModelSerializer):
