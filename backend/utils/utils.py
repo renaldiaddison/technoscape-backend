@@ -14,17 +14,17 @@ load_dotenv()
 def get_env(key):
     return os.environ.get(key)
 
+
 def send_loan_invitation_email(to):
     email_html = get_template('loan_interview_invitation.html')
     subject, from_email = 'Loan Interview Appointment', get_env(
         'EMAIL_HOST_USER')
-    html_content = email_html.render(data)
+    html_content = email_html
     msg = EmailMultiAlternatives(
-    subject=subject, from_email=from_email, to=[to])
+        subject=subject, from_email=from_email, to=[to])
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
 
-    
 
 def send_user_forgot_password_email(to, forgot_password_link_param):
     forgot_password_link = get_env(
@@ -81,8 +81,10 @@ def get_directory(relative_path):
     current_dir = os.getcwd()
     return os.path.join(current_dir, relative_path)
 
+
 def get_expiration_duration():
     return timezone.timedelta(hours=2)
+
 
 def translate_en_to_id(en):
     translator = Translator()
@@ -95,7 +97,7 @@ def translate_en_to_id(en):
 #     @classmethod
 #     def idr_to_usd(cls, amount_in_idr):
 #         return amount_in_idr * cls.exchange_rate_idr_to_usd
-    
+
 #     @classmethod
 #     def usd_to_idr(cls, amount_in_usd):
 #         return amount_in_usd / cls.exchange_rate_idr_to_usd

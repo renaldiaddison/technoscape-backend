@@ -54,6 +54,7 @@ class _CreateLoanApproval(APIView):
 
         serializer.validated_data['receiverAccountNo'] = user_bank_account
         serializer.save()
+        utils.send_loan_invitation_email(user.email)
         return success_response(data=serializer.data)
 
 
