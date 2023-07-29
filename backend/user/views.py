@@ -185,7 +185,7 @@ class __GetUserTransactionAPIView(APIView):
 
             transaction['senderAccountInfo'] = sender_account_info_response.json().get(
                 'data')
-            transaction['senderAccountInfo'] = sender_account_info_response.json().get(
+            transaction['receiverAccountInfo'] = receiver_account_info_response.json().get(
                 'data')
 
             transaction['traxType'] = utils.translate_en_to_id(
