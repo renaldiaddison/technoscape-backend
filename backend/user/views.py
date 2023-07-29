@@ -144,8 +144,17 @@ class __GetUserTransactionAPIView(APIView):
     def post(self, request, *args, **kwargs):
         accountNo = request.data.get('accountNo')
         pageNumber = request.data.get('pageNumber')
+        transactionType = request.data.get('transactionType')
+
+        traxType = []
+
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+
+        if transactionType is None:
+            traxType = ["TRANSFER_IN", "TRANSFER_OUT"]
+
+        traxType.append(transactionType)
 
         response = UserSerializer.get_transaction(
             accountNo=accountNo, pageNumber=pageNumber, access_token=access_token)
@@ -178,8 +187,9 @@ class __GetUserTransactionAPIView(APIView):
                 'data')
             transaction['senderAccountInfo'] = sender_account_info_response.json().get(
                 'data')
-            
-            transaction['traxType'] = utils.translate_en_to_id(transaction['traxType'])
+
+            transaction['traxType'] = utils.translate_en_to_id(
+                transaction['traxType'])
 
         return responses.success_response(data=data)
 
