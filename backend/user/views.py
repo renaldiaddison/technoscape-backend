@@ -153,10 +153,14 @@ class __GetUserTransactionAPIView(APIView):
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
+        filter = 0
+
         if transactionType is None:
             traxType = ["TRANSFER_IN", "TRANSFER_OUT"]
+            filter = 0
         else:
             traxType.append(transactionType)
+            filter = 1 if transactionType == "TRANSFER_IN" else 2
 
         print(traxType)
 
@@ -173,6 +177,8 @@ class __GetUserTransactionAPIView(APIView):
 
         data = json_get_transaction_response.get(
             'data')
+        
+        data['filter'] = filter
 
         transactions = data.get('transactions')
 

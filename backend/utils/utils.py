@@ -19,7 +19,7 @@ def send_loan_invitation_email(to):
     email_html = get_template('loan_interview_invitation.html')
     subject, from_email = 'Loan Interview Appointment', get_env(
         'EMAIL_HOST_USER')
-    html_content = email_html
+    html_content = email_html.render()
     msg = EmailMultiAlternatives(
         subject=subject, from_email=from_email, to=[to])
     msg.attach_alternative(html_content, 'text/html')

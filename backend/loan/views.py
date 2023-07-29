@@ -7,7 +7,7 @@ import requests
 from rest_framework import generics
 from utils.permissions import *
 from user.serializers import UserSerializer
-from utils import utils
+from utils import utils, responses
 from model_api.models import Model
 from user.models import User, UserApproval
 
@@ -22,7 +22,7 @@ class _CreateLoanApproval(APIView):
             access_token)
 
         if response.status_code == 401:
-            return response.error_response(error_message="Unauthorized", status=401)
+            return responses.error_response(error_message="Unauthorized", status=401)
 
         user_bank_account = response.json()['data']['accounts'][0]['accountNo']
 
@@ -53,7 +53,9 @@ class _CreateLoanApproval(APIView):
         serializer.validated_data['receiverAccountNo'] = user_bank_account
         serializer.save()
         utils.send_loan_invitation_email(user.email)
-        return success_response(data=serializer.data)
+        return success_response(data={
+            "prediction": prediction[0]
+        })
 
 
 class _ApproveLoanApproval(APIView):
@@ -151,9 +153,9 @@ class _GetLoan(APIView):
         elif (loan == None and loan_approval):
             return success_response(data=response_data)
         elif (loan_approval == None):
-            return error_response("Loan approval not found for the user.")
+            return success_response(data={})
         elif (loan == None):
-            return error_response("No unpaid loan found for the user.")
+            return success_response(data={})
 
 
 class _PayLoan(APIView):
