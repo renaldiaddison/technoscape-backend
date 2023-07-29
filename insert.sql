@@ -5,7 +5,7 @@
 -- Dumped from database version 14.4
 -- Dumped by pg_dump version 14.4
 
--- Started on 2023-07-29 17:50:53
+-- Started on 2023-07-29 19:52:55
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -233,6 +233,11 @@ COPY public.user_approvals (id, married, dependent, education, self_employed, in
 12	1	3	1	1	2000	3000	2	1
 9	1	3	0	1	13000000	20000000	1	1
 13	0	4	0	1	1000000	2020200	1	1
+14	1	3	0	1	200000	60000	2	1
+15	1	3	1	1	30000000	3000000	2	1
+16	1	3	1	1	300000	25000	2	1
+17	0	3	1	1	1000000	1200000	2	1
+18	0	3	0	1	12313212321	1232132123	2	1
 \.
 
 
@@ -253,6 +258,13 @@ COPY public.users (uid, username, email, old_password, current_password, is_appr
 183	mneach	mneachdev@gmail.com	mneach	halo123	t	121212	USER	11	1	5859452835687966
 196	aduy	muhamad.fitrayuda@gmail.com	aduy	aduy123	t	102941	USER	12	1	5859457310078804
 266	huhu	huhu@gmail.com	huhu123	huhu123	t	123456	USER	13	1	5859458120290690
+346	Renaldy	muhamad.learning@gmail.com	renaldy123	renaldy123	f	123456	USER	\N	1	5859452512792007
+348	kerupuk	kerupuk@gmail.com	keurpuk123	keurpuk123	f	123456	USER	\N	1	5859452279421885
+349	tester1234	mneach.gaming@gmail.com	tester1234	tester1234	t	123456	USER	14	1	5859453815375927
+359	titi	titi@gmail.com	titi123	titi123	t	123456	USER	15	1	5859453107378195
+361	lala	lala@gmail.com	lala123	lala123	t	123456	USER	16	1	5859458105403654
+366	bluejack	bluejackslc221@gmail.com	bluejack123	bluejack321	t	123456	USER	17	1	5859454508081710
+368	baru	baru@gmail.com	baru123	baru123	t	123456	USER	18	1	5859459313519573
 \.
 
 
@@ -274,10 +286,16 @@ COPY public.forgot_password_links (id, created_at, user_id) FROM stdin;
 --
 
 COPY public.loan_approvals (id, loan_amount, loan_days_term, "receiverAccountNo", is_approved, user_id, created_at, rate, is_done) FROM stdin;
-fa347016-85c9-4da3-aa0a-79b95f824f43	2000000	180	5859457287248296	\N	125	2023-07-29 14:11:16.267905+07	5	\N
-1d786af8-bd00-40ee-b21a-1c9a437158f6	300000	180	5859457287248296	\N	125	2023-07-29 14:16:37.768023+07	5	\N
-6afa0850-2e84-42b5-acb3-5d26c6486564	30000	180	5859457287248296	\N	125	2023-07-29 14:17:38.216169+07	5	\N
 d082186c-098d-4ee7-bf3b-bb8e23aeca6a	30000	180	5859458120290690	t	266	2023-07-29 16:55:40.61318+07	5	t
+6afa0850-2e84-42b5-acb3-5d26c6486564	30000	180	5859457287248296	t	125	2023-07-29 14:17:38.216169+07	5	\N
+1d786af8-bd00-40ee-b21a-1c9a437158f6	300000	180	5859457287248296	t	125	2023-07-29 14:16:37.768023+07	5	\N
+fa347016-85c9-4da3-aa0a-79b95f824f43	2000000	180	5859457287248296	f	125	2023-07-29 14:11:16.267905+07	5	\N
+b87cf98a-9ecf-4f77-a668-1dbb5d2f21d1	40000	270	5859453815375927	t	349	2023-07-29 18:34:01.825682+07	6	t
+55e0486f-6fc1-443f-a662-540208c3651d	50000	270	5859453815375927	t	349	2023-07-29 18:54:30.387277+07	6	t
+220487e3-01e4-4c93-a310-25247dac1c07	100000	270	5859453815375927	t	349	2023-07-29 19:14:03.749709+07	6	t
+1a94ec44-0209-4012-9a1d-28150ac3d097	100000	270	5859454508081710	t	366	2023-07-29 19:39:29.782014+07	6	t
+6c9b3a5a-3206-4759-9180-201eeb843aa4	300000	180	5859453107378195	t	359	2023-07-29 19:05:42.382577+07	5	t
+5e0e6210-2216-4805-8d02-f078e811ffc3	30000	180	5859459313519573	\N	368	2023-07-29 19:49:52.295496+07	5	\N
 \.
 
 
@@ -289,6 +307,11 @@ d082186c-098d-4ee7-bf3b-bb8e23aeca6a	30000	180	5859458120290690	t	266	2023-07-29
 
 COPY public.loans (id, is_payed, approval_id, created_at) FROM stdin;
 dfd28fee-0435-43ad-bd01-3e8382e7997e	t	d082186c-098d-4ee7-bf3b-bb8e23aeca6a	2023-07-29 17:18:18.701437+07
+6728aea9-300f-465d-b79d-7b7fa164a0ee	t	b87cf98a-9ecf-4f77-a668-1dbb5d2f21d1	2023-07-29 18:43:52.143033+07
+f5e46eef-5be8-4ba0-b22b-326386d49966	t	55e0486f-6fc1-443f-a662-540208c3651d	2023-07-29 19:11:08.749551+07
+0f50142d-2bbb-48cb-8a68-b9467df26272	t	220487e3-01e4-4c93-a310-25247dac1c07	2023-07-29 19:14:22.871009+07
+645c76ad-af10-4787-92d0-88d7f99ac755	t	1a94ec44-0209-4012-9a1d-28150ac3d097	2023-07-29 19:40:01.497849+07
+8ba6d046-44b7-4e11-92a0-828da31dfad7	t	6c9b3a5a-3206-4759-9180-201eeb843aa4	2023-07-29 19:12:38.814133+07
 \.
 
 
@@ -379,7 +402,7 @@ SELECT pg_catalog.setval('public.django_migrations_id_seq', 30, true);
 -- Name: user_approvals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_approvals_id_seq', 13, true);
+SELECT pg_catalog.setval('public.user_approvals_id_seq', 18, true);
 
 
 --
@@ -391,7 +414,7 @@ SELECT pg_catalog.setval('public.user_approvals_id_seq', 13, true);
 SELECT pg_catalog.setval('public.users_uid_seq', 1, false);
 
 
--- Completed on 2023-07-29 17:50:54
+-- Completed on 2023-07-29 19:52:56
 
 --
 -- PostgreSQL database dump complete

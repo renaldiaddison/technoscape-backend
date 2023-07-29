@@ -140,10 +140,12 @@ class _GetLoan(APIView):
     def get(self, request):
         user_id = self.request.GET.get("user_id")
 
-        loan_approval = LoanApproval.objects.filter(user_id=user_id).last()
-        loan = Loan.objects.filter(approval=loan_approval).last()
+        loan_approval = LoanApproval.objects.filter(user_id=user_id).order_by('-created_at').first()
+        loan = Loan.objects.filter(approval=loan_approval).first()
         loan_approval_serializer = LoanApprovalSerializer(loan_approval)
         loan_serializer = LoanSerializer(loan)
+
+        print(loan_approval)
 
         response_data = {
             "loan_approval": loan_approval_serializer.data,
@@ -191,7 +193,7 @@ class _PayLoan(APIView):
             return error_response(error_message="Unauthorized", status=401)
 
         response_data = response.json()
-        if (response_data.success == False):
+        if (response_data.get('success') == False):
             return error_response(error_message=response_data.get('errMsg'))
 
         return success_response(data=response_data)
