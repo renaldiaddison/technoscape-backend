@@ -91,7 +91,7 @@ class __GetUserBankAccountAPIView(APIView):
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
 
         json_get_user_bank_account_response = UserSerializer.get_user_bank_account(
-            access_token).json()
+            access_token=access_token).json()
 
         if not json_get_user_bank_account_response.get('success'):
             return responses.error_response(error_message=json_get_user_bank_account_response.get('errMsg'))

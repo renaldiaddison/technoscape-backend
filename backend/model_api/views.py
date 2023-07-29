@@ -25,7 +25,7 @@ class _ModelPredictAPIView(APIView):
             [[user.gender, user_approval.married, user_approval.dependent, user_approval.education, user_approval.self_employed, user_approval.income, user_approval.coappliciant_income, loan_approval.loan_amount, loan_approval.loan_days_term, user_approval.credit_history, user_approval.property_area]])
         print(prediction)
         if prediction[0] == 0:
-            return responses.error_response(error_message="anda miskin")
+            return responses.error_response(error_message="Maaf, loan anda tidak diapprove")
 
         return Response({"result": prediction}, status=status.HTTP_200_OK)
 

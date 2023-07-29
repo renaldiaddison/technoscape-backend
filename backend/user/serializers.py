@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
-from utils import utils
+from utils import utils, responses
 from .models import User, UserApproval
 import requests
 from django.utils import timezone
@@ -44,6 +44,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         response = requests.request("POST", url, headers=headers, json=payload)
 
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
         return response
 
     @classmethod
@@ -71,6 +74,9 @@ class UserSerializer(serializers.ModelSerializer):
         response = requests.request(
             "POST", url, headers=headers, json=payload)
 
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
         return response
 
     @classmethod
@@ -85,6 +91,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         response = requests.request("POST", url, headers=headers, json=payload)
 
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
         return response
 
     @classmethod
@@ -98,6 +107,9 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
         response = requests.request("POST", url, headers=headers, json=payload)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
 
         return response
 
@@ -117,6 +129,9 @@ class UserSerializer(serializers.ModelSerializer):
         headers = {}
         response = requests.post(url, headers=headers, json=payload)
 
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
         return response
 
     @classmethod
@@ -132,6 +147,9 @@ class UserSerializer(serializers.ModelSerializer):
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
 
         return response
 
@@ -151,7 +169,10 @@ class UserSerializer(serializers.ModelSerializer):
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.post(url, headers=headers, json=payload)
-        print(response)
+
+        if response.status_code == 401:
+            return responses.error_response(error_message="Unauthorized", status=401)
+
         return response
 
 
