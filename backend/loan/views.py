@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import LoanSerializer, LoanApprovalSerializer, LoanWithLoanApprovalSerializer
+from .serializers import LoanSerializer, LoanApprovalSerializer, LoanWithLoanApprovalSerializer, LoanApprovalWithUserSerializer
 from utils.responses import error_response, success_response
 from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
@@ -12,6 +12,7 @@ from model_api.models import Model
 from user.models import User, UserApproval
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
@@ -101,7 +102,6 @@ class _UnapproveLoanApproval(APIView):
         return success_response(data=response_data)
 
 
-
 class _CreateLoanView(APIView):
     def post(self, request, *args, **kwargs):
         loan_approval_id = request.data.get('approval')
@@ -176,10 +176,10 @@ class _PayLoan(APIView):
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
         headers = {'Authorization': f'Bearer {bearer_token}'}
 
-        months_difference = relativedelta(timezone.now(), loan.created_at).months
+        months_difference = relativedelta(
+            timezone.now(), loan.created_at).months
 
         excess_amount = (months_difference * 1) / 100
-
 
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
             "senderAccountNo": loan.approval.receiverAccountNo,
@@ -187,14 +187,14 @@ class _PayLoan(APIView):
             "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount / 100) + excess_amount
         }, headers=headers)
 
-        if response.status_code // 100 == 2:
-            response_data = response.json()
+        if response.status_code == 401:
+            return error_response(error_message="Unauthorized", status=401)
 
-            if (response_data.success == False):
-                return error_response(error_message=response.text)
-            return success_response(data=response_data)
-        else:
-            return error_response(error_message=response.text)
+        response_data = response.json()
+        if (response_data.success == False):
+            return error_response(error_message=response_data.get('errMsg'))
+
+        return success_response(data=response_data)
 
 
 class _GetLoanHistory(generics.ListAPIView):
@@ -209,6 +209,7 @@ class _GetLoanHistory(generics.ListAPIView):
             return Loan.objects.filter(approval__is_done=True, approval__user=user_id).order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
+        print(self.get_queryset())
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
@@ -224,9 +225,10 @@ class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id')
     serializer_class = LoanSerializer
 
+
 class _GetAllApproval(generics.ListAPIView):
     queryset = LoanApproval.objects.all().order_by('-created_at')
-    serializer_class = LoanApprovalSerializer
+    serializer_class = LoanApprovalWithUserSerializer
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

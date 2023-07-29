@@ -1,6 +1,11 @@
 # Technoscape Backend (Django Rest Framework)
 
-This is the tutorial to run the program.
+BlueJack Bank is a banking application built using a combination of modern technologies. It utilizes React for the front-end user interface, Django as the back-end framework, Django Rest Framework (DRF) for building RESTful APIs, and PostgreSQL as the database. In addition to the technologies I mentioned earlier, BlueJack Bank also incorporates Scikit-learn to build a machine learning model for loan approval tasks.
+
+Dependency Requirement:
+
+- Python 3 (Currently using: 3.10.9)
+- pip 22 (Currently using: 22.3.1)
 
 ---
 
@@ -74,7 +79,11 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-6. To run the server, run the following command
+6. After running the migrations, you should restore the base data in the 'insert.sql' file
+
+   > Note: You can do this step using pgAdmin
+
+7. To run the server, run the following command
    > Note: The server will run through default port which is 8000, you can add the last argument to specify the port
 
 ```

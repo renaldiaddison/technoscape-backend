@@ -9,7 +9,7 @@ urlpatterns = [
     path('get/', views.get_loan_view), 
     path('pay/', views.pay_loan_view),
     path('history/', views.get_loan_history_view),
-    path('approval/get', views.get_all_approval_view),
+    path('approval/get/', views.get_all_approval_view),
     # path('admin/approval/', views.admin_view_approvals),
     # path('admin/', views.admin_view_loans), 
 ]
