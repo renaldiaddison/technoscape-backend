@@ -10,7 +10,8 @@ from user.serializers import UserSerializer
 from utils import utils, responses
 from model_api.models import Model
 from user.models import User, UserApproval
-
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 class _CreateLoanApproval(APIView):
     def post(self, request, *args, **kwargs):
@@ -100,6 +101,7 @@ class _UnapproveLoanApproval(APIView):
         return success_response(data=response_data)
 
 
+
 class _CreateLoanView(APIView):
     def post(self, request, *args, **kwargs):
         loan_approval_id = request.data.get('approval')
@@ -174,10 +176,15 @@ class _PayLoan(APIView):
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
         headers = {'Authorization': f'Bearer {bearer_token}'}
 
+        months_difference = relativedelta(timezone.now(), loan.created_at).months
+
+        excess_amount = (months_difference * 1) / 100
+
+
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
             "senderAccountNo": loan.approval.receiverAccountNo,
             "receiverAccountNo": "5859455512376902",
-            "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount / 100)
+            "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount / 100) + excess_amount
         }, headers=headers)
 
         if response.status_code // 100 == 2:
