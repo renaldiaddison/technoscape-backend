@@ -224,6 +224,21 @@ class _AdminViewLoans(generics.ListAPIView):
     queryset = Loan.objects.all().order_by('-id')
     serializer_class = LoanSerializer
 
+class _GetAllApproval(generics.ListAPIView):
+    queryset = LoanApproval.objects.all().order_by('-created_at')
+    serializer_class = LoanApprovalSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return success_response(serializer.data)
+
 
 # class _GetLoanHistory(generics.ListAPIView):
 #     serializer_class = LoanSerializer
@@ -256,3 +271,4 @@ pay_loan_view = _PayLoan.as_view()
 # admin_view_approvals = _AdminViewApprovals.as_view()
 get_loan_history_view = _GetLoanHistory.as_view()
 admin_view_loans = _AdminViewLoans.as_view()
+get_all_approval_view = _GetAllApproval.as_view()
