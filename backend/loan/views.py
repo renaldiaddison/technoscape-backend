@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from .serializers import LoanSerializer, LoanApprovalSerializer, LoanApprovalWithUserSerializer
 from utils.responses import error_response, success_response
-from .models import Loan, LoanApproval, LoanHistory, LoanApprovalHistory
+from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import generics
@@ -62,18 +62,6 @@ class _ApproveLoanApproval(APIView):
         loan_approval.is_approved = True
         loan_approval.save()
 
-        # Save the LoanApproval data to LoanApprovalHistory
-        # loan_approval_history = LoanApprovalHistory.objects.create(
-        #     user=loan_approval.user,
-        #     loan_amount=loan_approval.loan_amount,
-        #     loan_days_term=loan_approval.loan_days_term,
-        #     receiverAccountNo=loan_approval.receiverAccountNo,
-        #     is_approved=True,
-        #     created_at=loan_approval.created_at,
-        # )
-
-        # loan_approval.delete()
-
         serializer = LoanApprovalSerializer(loan_approval)
         serialized_data = serializer.data
 
@@ -92,19 +80,10 @@ class _UnapproveLoanApproval(APIView):
         loan_approval_id = request.data.get('loan_approval_id')
         loan_approval = get_object_or_404(LoanApproval, pk=loan_approval_id)
 
-        # Save the LoanApproval data to LoanApprovalHistory
-        # loan_approval_history = LoanApprovalHistory.objects.create(
-        #     user=loan_approval.user,
-        #     loan_amount=loan_approval.loan_amount,
-        #     loan_days_term=loan_approval.loan_days_term,
-        #     receiverAccountNo=loan_approval.receiverAccountNo,
-        #     is_approved=False,
-        #     created_at=loan_approval.created_at,
-        # )
+        loan_approval.is_approved = False
+        loan_approval.save()
 
-        # loan_approval.delete()
-
-        serializer = LoanApprovalSerializer(loan_approval_history)
+        serializer = LoanApprovalSerializer(loan_approval)
         serialized_data = serializer.data
 
         response_data = {
