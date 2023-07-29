@@ -118,6 +118,22 @@ class UserSerializer(serializers.ModelSerializer):
         return response
 
     @classmethod
+    def get_bank_account_info(cls, access_token, accountNo):
+        url_suffix = "/bankAccount/info/"
+        url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
+
+        payload = {
+            'accountNo': accountNo
+        }
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+
+        return response
+
+    @classmethod
     def register(cls, ktpId, username, loginPassword, phoneNumber, birthDate, gender, email):
         url_suffix = "/user/auth/create"
         url = utils.get_env('HACKATHON_API_PREFIX') + url_suffix
