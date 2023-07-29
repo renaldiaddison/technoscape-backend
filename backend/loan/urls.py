@@ -8,7 +8,7 @@ urlpatterns = [
     path('approval/unapprove/', views.unapprove_loan_approval_view),
     path('get/', views.get_loan_view), 
     path('pay/', views.pay_loan_view),
-    path('history/', views.pay_loan_view),
+    path('history/', views.get_loan_history_view),
     # path('admin/approval/', views.admin_view_approvals),
     # path('admin/', views.admin_view_loans), 
 ]

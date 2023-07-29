@@ -189,8 +189,16 @@ class _PayLoan(APIView):
 
 
 class _GetLoanHistory(generics.ListAPIView):
-    queryset = Loan.objects.filter(approval__is_done=True).order_by('-created_at')
     serializer_class = LoanWithLoanApprovalSerializer
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        user = get_object_or_404(User, uid=user_id)
+        if(user.role == 'ADMIN'):
+            return Loan.objects.filter(approval__is_done=True).order_by('-created_at')
+        else:
+            return Loan.objects.filter(approval__is_done=True, approval__user = user_id).order_by('-created_at')
+
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
