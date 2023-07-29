@@ -1,4 +1,4 @@
-# Technoscape Backend (Django Rest Framework)
+# Technoscape Hackathon Backend
 
 BlueJack Bank is a banking application built using a combination of modern technologies. It utilizes React for the front-end user interface, Django as the back-end framework, Django Rest Framework (DRF) for building RESTful APIs, and PostgreSQL as the database. In addition to the technologies I mentioned earlier, BlueJack Bank also incorporates Scikit-learn to build a machine learning model for loan approval tasks.
 
@@ -17,10 +17,12 @@ Your root directory should look like the following.
 technoscape-backend\  <--This is the root directory
     backend\
         ...
-    >.env.template
+    >.env.example
     >.gitignore
+    >insert.sql
+    >README.md
     >requirements.txt
-    >steps.md
+    
 ```
 
 ## Steps/Commands
