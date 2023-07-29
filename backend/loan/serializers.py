@@ -20,7 +20,6 @@ class LoanSerializer(serializers.ModelSerializer):
 
 # Custom Serializers
 
-
 class LoanApprovalWithUserSerializer(serializers.ModelSerializer):
     user_data = serializers.SerializerMethodField()
 
@@ -31,4 +30,21 @@ class LoanApprovalWithUserSerializer(serializers.ModelSerializer):
 
     def get_user_data(self, obj):
         serializer = ImportantUserDataSerializer(obj.user)
+        return serializer.data
+
+class LoanWithLoanApprovalSerializer(serializers.ModelSerializer):
+    user_data = serializers.SerializerMethodField()
+    loan_approval_data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LoanApproval
+        fields = ['id', 'user', 'loan_amount', 'loan_days_term',
+                  'receiverAccountNo', 'is_approved', 'created_at', 'user_data', 'loan_approval_data']
+
+    def get_user_data(self, obj):
+        serializer = ImportantUserDataSerializer(obj.user)
+        return serializer.data
+
+    def get_loan_approval_data(self, obj):
+        serializer = LoanApprovalSerializer(obj.approval)
         return serializer.data

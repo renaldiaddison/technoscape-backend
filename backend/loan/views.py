@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import LoanSerializer, LoanApprovalSerializer, LoanApprovalWithUserSerializer
+from .serializers import LoanSerializer, LoanApprovalSerializer, LoanWithLoanApprovalSerializer
 from utils.responses import error_response, success_response
 from .models import Loan, LoanApproval
 from django.shortcuts import get_object_or_404
@@ -161,7 +161,9 @@ class _PayLoan(APIView):
         loan_id = request.data.get('loan')
         loan = get_object_or_404(Loan, pk=loan_id)
         loan.is_payed = True
+        loan.approval.is_done = True
         loan.save()
+        loan.approval.save()
 
         response = None
 
@@ -186,9 +188,9 @@ class _PayLoan(APIView):
             return error_response(error_message=response.text)
 
 
-class _AdminViewApprovals(generics.ListAPIView):
-    queryset = LoanApproval.objects.all().order_by('-id')
-    serializer_class = LoanApprovalWithUserSerializer
+class _GetLoanHistory(generics.ListAPIView):
+    queryset = Loan.objects.filter(approval__is_done=True).order_by('-created_at')
+    serializer_class = LoanWithLoanApprovalSerializer
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -207,26 +209,26 @@ class _AdminViewLoans(generics.ListAPIView):
     serializer_class = LoanSerializer
 
 
-class _GetLoanHistory(generics.ListAPIView):
-    serializer_class = LoanSerializer
+# class _GetLoanHistory(generics.ListAPIView):
+#     serializer_class = LoanSerializer
 
-    def get_queryset(self):
-        user_id = self.request.query_params.get('user_id')
-        if user_id:
-            return LoanHistory.objects.filter(approval__user_id=user_id)
-        else:
-            return list()
+#     def get_queryset(self):
+#         user_id = self.request.query_params.get('user_id')
+#         if user_id:
+#             return LoanHistory.objects.filter(approval__user_id=user_id)
+#         else:
+#             return list()
 
 
-class _GetLoanApprovalHistory(generics.ListAPIView):
-    serializer_class = LoanApprovalSerializer
+# class _GetLoanApprovalHistory(generics.ListAPIView):
+#     serializer_class = LoanApprovalSerializer
 
-    def get_queryset(self):
-        user_id = self.request.query_params.get('user_id')
-        if user_id:
-            return LoanApprovalHistory.objects.filter(user_id=user_id)
-        else:
-            return list()
+#     def get_queryset(self):
+#         user_id = self.request.query_params.get('user_id')
+#         if user_id:
+#             return LoanApprovalHistory.objects.filter(user_id=user_id)
+#         else:
+#             return list()
 
 
 create_loan_approval_view = _CreateLoanApproval.as_view()
@@ -235,7 +237,6 @@ unapprove_loan_approval_view = _UnapproveLoanApproval.as_view()
 create_loan_view = _CreateLoanView.as_view()
 get_loan_view = _GetLoan.as_view()
 pay_loan_view = _PayLoan.as_view()
-admin_view_approvals = _AdminViewApprovals.as_view()
+# admin_view_approvals = _AdminViewApprovals.as_view()
+get_loan_history_view = _GetLoanHistory.as_view()
 admin_view_loans = _AdminViewLoans.as_view()
-get_loan_history = _GetLoanHistory.as_view()
-get_loan_approval_history = _GetLoanApprovalHistory.as_view()
