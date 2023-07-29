@@ -181,20 +181,8 @@ class _PayLoan(APIView):
     def post(self, request, *args, **kwargs):
         loan_id = request.data.get('loan')
         loan = get_object_or_404(Loan, pk=loan_id)
-        loan_approval = get_object_or_404(LoanApproval, pk=loan.approval)
         loan.is_payed = True
         loan.save()
-
-        # Save the Loan data to LoanHistory
-        loan_history = LoanHistory.objects.create(
-            id=loan.id,
-            is_payed=loan.is_payed,
-            approval=loan.approval
-        )
-
-        loan.delete()
-
-        #
 
         response = None
 
@@ -204,14 +192,17 @@ class _PayLoan(APIView):
         headers = {'Authorization': f'Bearer {bearer_token}'}
 
         response = requests.post("http://34.101.154.14:8175/hackathon/bankAccount/transaction/create", json={
-            "senderAccountNo": loan_approval.receiverAccountNo,
-            "receiverAccountNo": "5859456169395245",
-            "amount": loan_approval.loan_amount
+            "senderAccountNo": loan.approval.receiverAccountNo,
+            "receiverAccountNo": "5859457287248296",
+            "amount": loan.approval.loan_amount + (loan.approval.rate * loan.approval.loan_amount  / 100)
         }, headers=headers)
 
         if response.status_code // 100 == 2:
             response_data = response.json()
-            return success_response(data="Loan Payed !")
+
+            if(response_data.success == False):
+                return error_response(error_message=response.text)
+            return success_response(data=response_data)
         else:
             return error_response(error_message=response.text)
 
