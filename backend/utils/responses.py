@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from utils import utils
 
 
 class DataResponse(Response):
@@ -7,7 +8,7 @@ class DataResponse(Response):
             response_data = {
                 'data': data,
                 'success': False,
-                'errorMessage': error_message or 'An error occurred.',
+                'errorMessage': utils.translate_en_to_id(error_message or 'An error occurred.'),
             }
         else:
             # If it's a success response, only include the data and success fields

@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('user/', include("user.urls")),
     path('loan/', include('loan.urls')),
-    path('model/', include('model_api.urls'))
+    path('model/', include('model_api.urls')),
+    path('forgot-password/', include('forgot_password_link.urls'))
 ]

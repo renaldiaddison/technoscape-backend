@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from utils import utils, responses
 from .models import User
-from .serializers import UserSerializer, UserApprovalSerializer
-import requests
+from .serializers import UserSerializer, UserApprovalSerializer, UpdatePasswordUserSerializer
+from forgot_password_link.models import ForgotPasswordLink
 
 
 class __CreateUserAPIView(APIView):
@@ -109,7 +109,6 @@ class __CreateTransactionAPIView(APIView):
         amount = request.data.get('amount')
         access_token = request.META.get(
             'HTTP_AUTHORIZATION', '').split('Bearer ')[1]
-        print(senderAccountNo, receiverAccountNo, amount)
 
         json_create_transaction_response = UserSerializer.create_transaction(senderAccountNo, receiverAccountNo, amount,
                                                                              access_token).json()
@@ -193,29 +192,51 @@ class __ApproveUserAPIView(APIView):
         return responses.success_response(data={})
 
 
-class _ChangePasswordUserAPIView(APIView):
-    def put(self, request, *args, **kwargs):
+class __VerifyPINAPIView(APIView):
+    def post(self, request, *args, **kwargs):
         user_id = request.data.get('user_id')
+        pin = request.data.get('pin')
+
         user = User.objects.filter(
             uid=user_id).first()
 
         if not user:
             return responses.error_response(error_message="User not found")
-        
-        # new_password = request.data.get('new_password')
-        # serializer = UpdatePasswordUserSerializer(user,
-        #                                           data=request.data)
 
-        # if not serializer.is_valid():
-        #     return Response({"detail":
-        #                      utils.get_first_error(serializer.errors)
-        #                      }, status=status.HTTP_400_BAD_REQUEST)
+        if pin != user.pin:
+            return responses.error_response(error_message="PIN Incorrect")
 
-        # if (utils.compare_password(serializer.validated_data['password'], user.password)):
-        #     return Response({"detail": "New password must be different from the old password"}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer.save()
-        # ForgotPasswordLink.delete_by_user_id_if_exists(user_id)
-        # return Response({"detail": "Password changed."}, status=status.HTTP_200_OK)
+        return responses.success_response(data={})
+
+
+class _ForgotPasswordUserAPIView(APIView):
+    def put(self, request, *args, **kwargs):
+        forgot_password_link_id = request.data.get('forgot_password_link_id')
+
+        forgot_password_link = ForgotPasswordLink.objects.filter(
+            pk=forgot_password_link_id).first()
+
+        if not forgot_password_link:
+            return responses.error_response(error_message="Link not valid")
+
+        user = User.objects.filter(
+            uid=forgot_password_link.user.uid).first()
+
+        if not user:
+            return responses.error_response(error_message="User not found")
+
+        serializer = UpdatePasswordUserSerializer(user,
+                                                  data=request.data)
+
+        if not serializer.is_valid():
+            return responses.error_response(error_message=utils.get_first_error(serializer.error))
+
+        if serializer.validated_data['current_password'] == user.current_password:
+            return responses.error_response(error_message="New password must be different from the old password")
+
+        serializer.save()
+        forgot_password_link.delete()
+        return responses.success_response(data={})
 
 
 create_user_api_view = __CreateUserAPIView.as_view()
@@ -227,3 +248,5 @@ get_user_transaction_api_view = __GetUserTransactionAPIView.as_view()
 get_user_transaction_transfer_in_api_view = __GetUserTransactionTransferInAPIView.as_view()
 get_user_transaction_transfer_out_api_view = __GetUserTransactionTransferOutAPIView.as_view()
 approve_user_api_view = __ApproveUserAPIView.as_view()
+forgot_password_api_view = _ForgotPasswordUserAPIView.as_view()
+verify_pin_api_view = __VerifyPINAPIView.as_view()
